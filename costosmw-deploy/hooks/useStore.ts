@@ -21,6 +21,18 @@ function changed(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) !== JSON.stringify(b)
 }
 
+// Los errores de Supabase (PostgrestError) son objetos planos, no Error
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (err && typeof err === 'object') {
+    const e = err as Record<string, unknown>
+    const parts = [e.message, e.details, e.hint, e.code].filter(Boolean)
+    if (parts.length) return parts.join(' · ')
+    try { return JSON.stringify(err) } catch { /* circular */ }
+  }
+  return String(err)
+}
+
 export function useStore() {
   const [proveedores, setProveedoresState] = useState<Proveedor[]>([])
   const [ingredientes, setIngredientesState] = useState<Ingrediente[]>([])
@@ -55,7 +67,7 @@ export function useStore() {
         }
       } catch (err) {
         console.error('Error cargando datos de Supabase:', err)
-        setLoadError(err instanceof Error ? err.message : String(err))
+        setLoadError(errorMessage(err))
       } finally {
         setLoading(false)
       }
