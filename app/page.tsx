@@ -3,14 +3,21 @@
 import { useState } from 'react'
 import ProveedoresModule from '../components/proveedores/ProveedoresModule'
 import PlatosAccordion from '../components/platos/PlatosAccordion'
+import ResumenModule from '../components/resumen/ResumenModule'
 import { useStore } from '../hooks/useStore'
 import { Ingrediente } from '../types'
 
-type Tab = 'platos' | 'precios'
+type Tab = 'platos' | 'precios' | 'resumen'
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>('platos')
-  const { loading, proveedores, setProveedores, ingredientes, setIngredientes, platos, setPlatos, actualizarPrecioIngrediente } = useStore()
+  const {
+    loading, saveStatus,
+    proveedores, setProveedores,
+    ingredientes, setIngredientes,
+    platos, setPlatos, updatePlato,
+    actualizarPrecioIngrediente,
+  } = useStore()
 
   function handleAddProveedor(nombre: string) {
     const id = nombre.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now()
@@ -46,7 +53,7 @@ export default function Home() {
           <span className="text-brand-muted text-xs">· Costos</span>
         </div>
         <nav className="flex gap-1">
-          {([['platos', 'Platos'], ['precios', 'Precios']] as [Tab, string][]).map(([t, label]) => (
+          {([['platos', 'Platos'], ['precios', 'Precios'], ['resumen', 'Resumen']] as [Tab, string][]).map(([t, label]) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -58,13 +65,18 @@ export default function Home() {
             </button>
           ))}
         </nav>
+        <div className="ml-auto text-xs">
+          {saveStatus === 'saving' && <span className="text-brand-muted animate-pulse">Guardando…</span>}
+          {saveStatus === 'saved' && <span className="text-brand-success">✓ Guardado</span>}
+          {saveStatus === 'error' && <span className="text-brand-error">⚠ Error al guardar — revisá tu conexión</span>}
+        </div>
       </header>
 
       {tab === 'platos' && (
         <PlatosAccordion
           platos={platos}
           ingredientes={ingredientes}
-          onUpdatePlato={p => setPlatos(platos.map(x => x.id === p.id ? p : x))}
+          onUpdatePlato={updatePlato}
         />
       )}
 
@@ -78,6 +90,8 @@ export default function Home() {
           onDeleteIngrediente={handleDeleteIngrediente}
         />
       )}
+
+      {tab === 'resumen' && <ResumenModule platos={platos} />}
     </div>
   )
 }
