@@ -13,9 +13,9 @@ interface Props {
 const SECCIONES = ['Entradas', 'Ensaladas', 'Arroces', 'Pescados', 'Carnes', 'Pastas', 'Fast food', 'Menú infantil']
 
 function getFoodCostColor(fc: number) {
-  if (fc <= 30) return 'text-emerald-600 bg-emerald-50'
-  if (fc <= 40) return 'text-amber-600 bg-amber-50'
-  return 'text-red-600 bg-red-50'
+  if (fc <= 30) return 'text-brand-success bg-brand-success/10'
+  if (fc <= 40) return 'text-yellow-400 bg-yellow-400/10'
+  return 'text-brand-error bg-brand-error/10'
 }
 
 export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Props) {
@@ -42,9 +42,7 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
   function handleNombreChange(value: string) {
     setNewItem(p => ({ ...p, nombre: value, ingredienteId: null, precioBase: '' }))
     if (value.length >= 2) {
-      const results = ingredientes.filter(i =>
-        i.nombre.toLowerCase().includes(value.toLowerCase()) && i.precio !== null
-      )
+      const results = ingredientes.filter(i => i.nombre.toLowerCase().includes(value.toLowerCase()) && i.precio !== null)
       setAutocompleteResults(results)
       setShowAutocomplete(results.length > 0)
     } else {
@@ -69,9 +67,7 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
     const precioBase = parseFloat(newItem.precioBase.replace(/\./g, '').replace(',', '.'))
     const merma = parseFloat(newItem.merma)
     if (!newItem.nombre || isNaN(cantidad) || isNaN(precioBase)) return
-
     const mermaVal = isNaN(merma) ? 0 : merma
-    const costo = calcularCosto(precioBase, cantidad, newItem.unidad, mermaVal)
     const item: ItemPlato = {
       id: crypto.randomUUID(),
       nombre: newItem.nombre,
@@ -80,7 +76,7 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
       unidad: newItem.unidad,
       precioBase,
       merma: mermaVal,
-      costoCalculado: costo,
+      costoCalculado: calcularCosto(precioBase, cantidad, newItem.unidad, mermaVal),
     }
     onUpdatePlato({ ...plato, items: [...plato.items, item] })
     setNewItem({ nombre: '', ingredienteId: null, cantidad: '', unidad: 'gramos', precioBase: '', merma: '0' })
@@ -96,17 +92,22 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
     return acc
   }, {} as Record<string, Plato[]>)
 
+  const inputClass = 'bg-brand-dark border border-brand-border rounded-lg px-3 py-1.5 text-sm text-brand-text placeholder-brand-muted focus:border-brand-accent focus:outline-none transition-colors'
+
   return (
-    <div className="flex h-[calc(100vh-57px)]">
-      <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Platos</div>
-          <div className="text-xs text-gray-500">{platosConItems} de {platos.length} cargados</div>
-          <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-emerald-500 rounded-full transition-all"
-              style={{ width: `${platos.length > 0 ? (platosConItems / platos.length) * 100 : 0}%` }}
-            />
+    <div className="flex h-[calc(100vh-49px)]">
+      {/* Sidebar */}
+      <aside className="w-60 bg-brand-dark border-r border-brand-border flex flex-col shrink-0">
+        <div className="p-4 border-b border-brand-border">
+          <div className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-2">Platos</div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1 bg-brand-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-brand-accent rounded-full transition-all"
+                style={{ width: platos.length > 0 ? `${(platosConItems / platos.length) * 100}%` : '0%' }}
+              />
+            </div>
+            <span className="text-xs text-brand-muted whitespace-nowrap">{platosConItems}/{platos.length}</span>
           </div>
         </div>
         <div className="overflow-y-auto flex-1">
@@ -115,100 +116,101 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
             if (!secPlatos.length) return null
             return (
               <div key={sec}>
-                <div className="px-4 py-1.5 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
+                <div className="px-4 py-2 text-xs font-semibold text-brand-muted/60 uppercase tracking-widest bg-brand-dark sticky top-0">
                   {sec}
                 </div>
-                {secPlatos.map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSelectedPlatoId(p.id)}
-                    className={`w-full text-left px-4 py-2.5 border-b border-gray-100 hover:bg-white transition-colors flex items-center justify-between ${
-                      selectedPlatoId === p.id ? 'bg-white border-l-2 border-l-emerald-600' : ''
-                    }`}
-                  >
-                    <span className="text-sm text-gray-800 leading-tight">{p.nombre}</span>
-                    {p.items.length > 0 && (
-                      <span className="text-emerald-500 text-base ml-1 shrink-0">✓</span>
-                    )}
-                  </button>
-                ))}
+                {secPlatos.map(p => {
+                  const isActive = selectedPlatoId === p.id
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedPlatoId(p.id)}
+                      className={`w-full text-left px-4 py-2.5 border-b border-brand-border/30 transition-colors flex items-center justify-between gap-2 ${
+                        isActive ? 'bg-brand-card border-l-2 border-l-brand-accent' : 'hover:bg-brand-card/50'
+                      }`}
+                    >
+                      <span className={`text-sm leading-tight ${isActive ? 'text-brand-text' : 'text-brand-muted'}`}>{p.nombre}</span>
+                      {p.items.length > 0 && <span className="text-brand-success text-xs shrink-0">✓</span>}
+                    </button>
+                  )
+                })}
               </div>
             )
           })}
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-6">
+      {/* Main */}
+      <main className="flex-1 overflow-y-auto bg-brand-dark p-6">
         {plato ? (
           <>
+            {/* Header */}
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">{plato.nombre}</h2>
-                <div className="text-sm text-gray-500 mt-0.5">
-                  {plato.seccion} · Precio de venta: <span className="font-medium text-gray-700">{formatPeso(plato.precioVenta)}</span>
+                <h2 className="text-lg font-semibold text-brand-text">{plato.nombre}</h2>
+                <div className="text-sm text-brand-muted mt-0.5">
+                  {plato.seccion} · <span className="text-brand-text/80">{formatPeso(plato.precioVenta)}</span>
                 </div>
               </div>
               {plato.items.length > 0 && (
-                <div className="flex gap-4">
+                <div className="flex gap-5">
                   <div className="text-center">
-                    <div className="text-lg font-bold text-gray-800">{formatPeso(totalCosto)}</div>
-                    <div className="text-xs text-gray-500">Costo total</div>
+                    <div className="text-base font-semibold text-brand-text">{formatPeso(totalCosto)}</div>
+                    <div className="text-xs text-brand-muted">Costo</div>
                   </div>
                   <div className="text-center">
-                    <div className={`text-lg font-bold px-2 py-0.5 rounded ${getFoodCostColor(foodCost)}`}>
+                    <div className={`text-base font-semibold px-2 py-0.5 rounded-lg ${getFoodCostColor(foodCost)}`}>
                       {foodCost.toFixed(1)}%
                     </div>
-                    <div className="text-xs text-gray-500">Food cost</div>
+                    <div className="text-xs text-brand-muted">Food cost</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-bold text-gray-700">{margen.toFixed(1)}%</div>
-                    <div className="text-xs text-gray-500">Margen bruto</div>
+                    <div className="text-base font-semibold text-brand-muted">{margen.toFixed(1)}%</div>
+                    <div className="text-xs text-brand-muted">Margen</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-bold text-emerald-600">{formatPeso(gananciaPorPlato)}</div>
-                    <div className="text-xs text-gray-500">Ganancia</div>
+                    <div className="text-base font-semibold text-brand-success">{formatPeso(gananciaPorPlato)}</div>
+                    <div className="text-xs text-brand-muted">Ganancia</div>
                   </div>
                 </div>
               )}
             </div>
 
+            {/* Items table */}
             {plato.items.length > 0 && (
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+              <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden mb-5">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-xs text-gray-500 border-b border-gray-100 bg-gray-50">
-                      <th className="text-left px-4 py-2 font-medium">Ingrediente</th>
-                      <th className="text-right px-4 py-2 font-medium">Cantidad</th>
-                      <th className="text-right px-4 py-2 font-medium">Precio/kg (u)</th>
-                      <th className="text-right px-4 py-2 font-medium">Merma %</th>
-                      <th className="text-right px-4 py-2 font-medium">Costo</th>
-                      <th className="px-4 py-2"></th>
+                    <tr className="text-xs text-brand-muted border-b border-brand-border/50">
+                      <th className="text-left px-4 py-2.5 font-medium">Ingrediente</th>
+                      <th className="text-right px-4 py-2.5 font-medium">Cantidad</th>
+                      <th className="text-right px-4 py-2.5 font-medium">Precio/kg</th>
+                      <th className="text-right px-4 py-2.5 font-medium">Merma</th>
+                      <th className="text-right px-4 py-2.5 font-medium">Costo</th>
+                      <th className="px-4 py-2.5 w-8"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {plato.items.map(item => (
-                      <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                        <td className="px-4 py-2 text-sm text-gray-800">
+                      <tr key={item.id} className="border-b border-brand-border/30 hover:bg-brand-card-hover/50 transition-colors">
+                        <td className="px-4 py-2.5 text-sm text-brand-text">
                           {item.nombre}
-                          {item.ingredienteId && <span className="ml-1 text-xs text-emerald-600">●</span>}
+                          {item.ingredienteId && <span className="ml-1.5 text-xs text-brand-accent">●</span>}
                         </td>
-                        <td className="px-4 py-2 text-sm text-right text-gray-600">
+                        <td className="px-4 py-2.5 text-sm text-right text-brand-muted">
                           {item.cantidad} {item.unidad === 'gramos' ? 'g' : item.unidad === 'ml' ? 'ml' : 'u'}
                         </td>
-                        <td className="px-4 py-2 text-sm text-right text-gray-600">{formatPeso(item.precioBase)}</td>
-                        <td className="px-4 py-2 text-sm text-right text-gray-600">{item.merma}%</td>
-                        <td className="px-4 py-2 text-sm text-right font-medium text-gray-800">{formatPeso(item.costoCalculado)}</td>
-                        <td className="px-4 py-2 text-right">
-                          <button
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="text-gray-300 hover:text-red-500 text-lg leading-none transition-colors"
-                          >×</button>
+                        <td className="px-4 py-2.5 text-sm text-right text-brand-muted">{formatPeso(item.precioBase)}</td>
+                        <td className="px-4 py-2.5 text-sm text-right text-brand-muted">{item.merma}%</td>
+                        <td className="px-4 py-2.5 text-sm text-right font-medium text-brand-text">{formatPeso(item.costoCalculado)}</td>
+                        <td className="px-4 py-2.5 text-right">
+                          <button onClick={() => handleDeleteItem(item.id)} className="text-brand-border hover:text-brand-error text-lg leading-none transition-colors">×</button>
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-gray-50 border-t border-gray-200">
-                      <td colSpan={4} className="px-4 py-2 text-sm font-semibold text-gray-700 text-right">Total costo real</td>
-                      <td className="px-4 py-2 text-sm font-bold text-gray-800 text-right">{formatPeso(totalCosto)}</td>
+                    <tr className="border-t border-brand-border/50 bg-brand-dark/50">
+                      <td colSpan={4} className="px-4 py-2.5 text-sm font-medium text-brand-muted text-right">Total costo</td>
+                      <td className="px-4 py-2.5 text-sm font-semibold text-brand-text text-right">{formatPeso(totalCosto)}</td>
                       <td></td>
                     </tr>
                   </tbody>
@@ -216,14 +218,15 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
               </div>
             )}
 
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Agregar ingrediente</h3>
+            {/* Add item form */}
+            <div className="bg-brand-card border border-brand-border rounded-xl p-4">
+              <div className="text-sm font-medium text-brand-text mb-3">Agregar ingrediente</div>
               <div className="flex gap-3 flex-wrap items-end">
                 <div className="relative flex-1 min-w-40">
-                  <label className="block text-xs text-gray-500 mb-1">Nombre</label>
+                  <label className="block text-xs text-brand-muted mb-1">Nombre</label>
                   <input
                     type="text"
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className={`${inputClass} w-full`}
                     placeholder="Nombre del ingrediente"
                     value={newItem.nombre}
                     onChange={e => handleNombreChange(e.target.value)}
@@ -231,68 +234,49 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
                     onBlur={() => setTimeout(() => setShowAutocomplete(false), 150)}
                   />
                   {showAutocomplete && (
-                    <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-brand-card border border-brand-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
                       {autocompleteResults.map(ing => (
                         <button
                           key={ing.id}
                           onMouseDown={() => handleSelectIngrediente(ing)}
-                          className="w-full text-left px-3 py-2 hover:bg-emerald-50 text-sm flex items-center justify-between"
+                          className="w-full text-left px-3 py-2.5 hover:bg-brand-card-hover text-sm flex items-center justify-between transition-colors"
                         >
-                          <span>{ing.nombre}</span>
-                          <span className="text-xs text-emerald-600 ml-2">{formatPeso(ing.precio!)}/kg</span>
+                          <span className="text-brand-text">{ing.nombre}</span>
+                          <span className="text-xs text-brand-accent ml-2">{formatPeso(ing.precio!)}/kg</span>
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
                 <div className="w-24">
-                  <label className="block text-xs text-gray-500 mb-1">Cantidad</label>
-                  <input
-                    type="number"
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="0"
-                    value={newItem.cantidad}
-                    onChange={e => setNewItem(p => ({ ...p, cantidad: e.target.value }))}
-                  />
+                  <label className="block text-xs text-brand-muted mb-1">Cantidad</label>
+                  <input type="number" className={`${inputClass} w-full`} placeholder="0" value={newItem.cantidad} onChange={e => setNewItem(p => ({ ...p, cantidad: e.target.value }))} />
                 </div>
                 <div className="w-28">
-                  <label className="block text-xs text-gray-500 mb-1">Unidad</label>
-                  <select
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    value={newItem.unidad}
-                    onChange={e => setNewItem(p => ({ ...p, unidad: e.target.value as UnidadPlato }))}
-                  >
+                  <label className="block text-xs text-brand-muted mb-1">Unidad</label>
+                  <select className={`${inputClass} w-full`} value={newItem.unidad} onChange={e => setNewItem(p => ({ ...p, unidad: e.target.value as UnidadPlato }))}>
                     <option value="gramos">Gramos</option>
                     <option value="ml">Mililitros</option>
                     <option value="unidad">Unidad</option>
                   </select>
                 </div>
                 <div className="w-36">
-                  <label className="block text-xs text-gray-500 mb-1">Precio/kg (o unidad)</label>
+                  <label className="block text-xs text-brand-muted mb-1">Precio/kg (u)</label>
                   <input
                     type="text"
-                    className={`w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                      newItem.ingredienteId ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300'
-                    }`}
+                    className={`${inputClass} w-full ${newItem.ingredienteId ? 'border-brand-accent/50' : ''}`}
                     placeholder="$ precio"
                     value={newItem.precioBase}
                     onChange={e => setNewItem(p => ({ ...p, precioBase: e.target.value, ingredienteId: null }))}
                   />
                 </div>
                 <div className="w-24">
-                  <label className="block text-xs text-gray-500 mb-1">Merma %</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="99"
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    value={newItem.merma}
-                    onChange={e => setNewItem(p => ({ ...p, merma: e.target.value }))}
-                  />
+                  <label className="block text-xs text-brand-muted mb-1">Merma %</label>
+                  <input type="number" min="0" max="99" className={`${inputClass} w-full`} value={newItem.merma} onChange={e => setNewItem(p => ({ ...p, merma: e.target.value }))} />
                 </div>
                 <button
                   onClick={handleAddItem}
-                  className="bg-emerald-700 text-white px-4 py-1.5 rounded text-sm hover:bg-emerald-800 transition-colors"
+                  className="bg-brand-accent hover:bg-brand-accent-hover text-white rounded-lg px-4 py-1.5 text-sm font-medium transition-colors"
                 >
                   Agregar
                 </button>
@@ -300,7 +284,7 @@ export default function PlatosModule({ platos, ingredientes, onUpdatePlato }: Pr
             </div>
           </>
         ) : (
-          <div className="text-gray-400 text-center mt-20">Seleccioná un plato</div>
+          <div className="text-brand-muted text-center mt-20 text-sm">Seleccioná un plato</div>
         )}
       </main>
     </div>

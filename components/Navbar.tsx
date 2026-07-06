@@ -15,20 +15,23 @@ const TAB_LABELS: Record<Tab, string> = {
 
 export default function Navbar({ activeTab, onTabChange }: Props) {
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-8">
-      <div className="flex items-center gap-2">
-        <span className="text-xl font-bold text-emerald-700">Oliovita</span>
-        <span className="text-xs text-gray-400 font-medium">· Costos</span>
+    <nav className="bg-brand-dark border-b border-brand-border px-6 py-3 flex items-center gap-8">
+      <div className="flex items-center gap-2.5">
+        <div className="w-6 h-6 rounded-md bg-brand-accent flex items-center justify-center">
+          <span className="text-white text-xs font-semibold">O</span>
+        </div>
+        <span className="text-brand-text text-sm font-semibold tracking-tight">Oliovita</span>
+        <span className="text-brand-muted text-xs">· Costos</span>
       </div>
-      <div className="flex gap-1 ml-4">
+      <div className="flex gap-1 ml-2">
         {(['proveedores', 'platos', 'resumen'] as Tab[]).map(tab => (
           <button
             key={tab}
             onClick={() => onTabChange(tab)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'bg-emerald-700 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-brand-card text-brand-text'
+                : 'text-brand-muted hover:text-brand-text hover:bg-brand-card/50'
             }`}
           >
             {TAB_LABELS[tab]}

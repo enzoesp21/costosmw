@@ -10,12 +10,20 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          dark: '#dbd2b5',
-          card: '#ffffff',
-          border: '#cab892',
-          accent: '#6e8f7a',
-          text: '#1f2d27',
+          dark: '#1a1916',
+          card: '#2a2925',
+          'card-hover': '#333330',
+          border: '#3d3d38',
+          accent: '#d97757',
+          'accent-hover': '#c86644',
+          text: '#ede8df',
+          muted: '#8c877e',
+          success: '#5a9e6f',
+          error: '#e05c5c',
         },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },

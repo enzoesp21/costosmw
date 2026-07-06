@@ -8,9 +8,9 @@ interface Props {
 }
 
 function getFoodCostClass(fc: number) {
-  if (fc <= 30) return 'text-emerald-600 bg-emerald-50 font-medium'
-  if (fc <= 40) return 'text-amber-600 bg-amber-50 font-medium'
-  return 'text-red-600 bg-red-50 font-medium'
+  if (fc <= 30) return 'text-brand-success bg-brand-success/10'
+  if (fc <= 40) return 'text-yellow-400 bg-yellow-400/10'
+  return 'text-brand-error bg-brand-error/10'
 }
 
 export default function ResumenModule({ platos }: Props) {
@@ -42,32 +42,32 @@ export default function ResumenModule({ platos }: Props) {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-brand-dark min-h-full">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">Resumen general</h2>
-          <p className="text-sm text-gray-500 mt-1">{platosConItems.length} platos con ingredientes cargados</p>
+          <h2 className="text-lg font-semibold text-brand-text">Resumen general</h2>
+          <p className="text-sm text-brand-muted mt-0.5">{platosConItems.length} platos con ingredientes cargados</p>
         </div>
         <button
           onClick={exportarExcel}
           disabled={rows.length === 0}
-          className="bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-brand-accent hover:bg-brand-accent-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          Exportar a Excel
+          Exportar Excel
         </button>
       </div>
 
       {rows.length === 0 ? (
-        <div className="text-center text-gray-400 py-20">
-          <div className="text-4xl mb-3">🍽</div>
-          <div>Todavía no hay platos con ingredientes cargados.</div>
-          <div className="text-sm mt-1">Cargá ingredientes en la sección Platos para ver el resumen aquí.</div>
+        <div className="text-center text-brand-muted py-24">
+          <div className="text-4xl mb-4 opacity-30">🍽</div>
+          <div className="text-sm">Todavía no hay platos con ingredientes cargados.</div>
+          <div className="text-xs mt-1 text-brand-muted/60">Cargá ingredientes en la sección Platos para ver el resumen aquí.</div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="text-xs text-gray-500 border-b border-gray-200 bg-gray-50">
+              <tr className="text-xs text-brand-muted border-b border-brand-border/50">
                 <th className="text-left px-4 py-3 font-medium">Plato</th>
                 <th className="text-left px-4 py-3 font-medium">Sección</th>
                 <th className="text-right px-4 py-3 font-medium">Costo</th>
@@ -79,18 +79,18 @@ export default function ResumenModule({ platos }: Props) {
             </thead>
             <tbody>
               {rows.map(({ plato, costo, fc, margen, ganancia }) => (
-                <tr key={plato.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                  <td className="px-4 py-3 text-sm text-gray-800 font-medium">{plato.nombre}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{plato.seccion}</td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatPeso(costo)}</td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatPeso(plato.precioVenta)}</td>
+                <tr key={plato.id} className="border-b border-brand-border/30 hover:bg-brand-card-hover/50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-medium text-brand-text">{plato.nombre}</td>
+                  <td className="px-4 py-3 text-sm text-brand-muted">{plato.seccion}</td>
+                  <td className="px-4 py-3 text-sm text-right text-brand-text/80">{formatPeso(costo)}</td>
+                  <td className="px-4 py-3 text-sm text-right text-brand-text/80">{formatPeso(plato.precioVenta)}</td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`text-sm px-2 py-0.5 rounded ${getFoodCostClass(fc)}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-lg font-medium ${getFoodCostClass(fc)}`}>
                       {fc.toFixed(1)}%
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{margen.toFixed(1)}%</td>
-                  <td className="px-4 py-3 text-sm text-right font-medium text-emerald-600">{formatPeso(ganancia)}</td>
+                  <td className="px-4 py-3 text-sm text-right text-brand-muted">{margen.toFixed(1)}%</td>
+                  <td className="px-4 py-3 text-sm text-right font-medium text-brand-success">{formatPeso(ganancia)}</td>
                 </tr>
               ))}
             </tbody>

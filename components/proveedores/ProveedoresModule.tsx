@@ -46,31 +46,42 @@ export default function ProveedoresModule({
     const val = editPrices[ing.id]
     if (val === undefined) return
     const num = parseFloat(val.replace(/\./g, '').replace(',', '.'))
-    if (!isNaN(num) && num > 0) {
-      onUpdatePrecio(ing.id, num)
-    }
+    if (!isNaN(num) && num > 0) onUpdatePrecio(ing.id, num)
     setEditPrices(prev => { const n = { ...prev }; delete n[ing.id]; return n })
   }
 
+  const inputClass = 'bg-brand-dark border border-brand-border rounded-lg px-3 py-1.5 text-sm text-brand-text placeholder-brand-muted focus:border-brand-accent focus:outline-none transition-colors'
+  const btnPrimary = 'bg-brand-accent hover:bg-brand-accent-hover text-white rounded-lg px-4 py-1.5 text-sm font-medium transition-colors'
+  const btnSecondary = 'bg-brand-card hover:bg-brand-card-hover text-brand-muted hover:text-brand-text border border-brand-border rounded-lg px-4 py-1.5 text-sm font-medium transition-colors'
+
   return (
-    <div className="flex h-[calc(100vh-57px)]">
-      <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Proveedores</span>
+    <div className="flex h-[calc(100vh-49px)]">
+      {/* Sidebar */}
+      <aside className="w-60 bg-brand-dark border-r border-brand-border flex flex-col shrink-0">
+        <div className="p-4 border-b border-brand-border">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-brand-muted uppercase tracking-widest">Proveedores</span>
             <button
               onClick={() => setShowAddProv(true)}
-              className="text-emerald-700 hover:text-emerald-900 text-lg font-bold leading-none"
+              className="w-6 h-6 rounded-md bg-brand-card hover:bg-brand-card-hover text-brand-muted hover:text-brand-text flex items-center justify-center transition-colors text-base leading-none"
               title="Agregar proveedor"
             >+</button>
           </div>
-          <div className="text-xs text-gray-500">{totalCargados} / {ingredientes.length} precios cargados</div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1 bg-brand-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-brand-accent rounded-full transition-all"
+                style={{ width: ingredientes.length > 0 ? `${(totalCargados / ingredientes.length) * 100}%` : '0%' }}
+              />
+            </div>
+            <span className="text-xs text-brand-muted whitespace-nowrap">{totalCargados}/{ingredientes.length}</span>
+          </div>
         </div>
 
         {showAddProv && (
-          <div className="p-3 border-b border-gray-200 bg-white">
+          <div className="p-3 border-b border-brand-border bg-brand-card/50">
             <input
-              className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
+              className={`${inputClass} w-full mb-2`}
               placeholder="Nombre del proveedor"
               value={newProvNombre}
               onChange={e => setNewProvNombre(e.target.value)}
@@ -79,18 +90,11 @@ export default function ProveedoresModule({
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  if (newProvNombre.trim()) {
-                    onAddProveedor(newProvNombre.trim())
-                    setNewProvNombre('')
-                    setShowAddProv(false)
-                  }
+                  if (newProvNombre.trim()) { onAddProveedor(newProvNombre.trim()); setNewProvNombre(''); setShowAddProv(false) }
                 }}
-                className="flex-1 bg-emerald-700 text-white rounded px-2 py-1 text-xs"
+                className={`flex-1 ${btnPrimary}`}
               >Guardar</button>
-              <button
-                onClick={() => setShowAddProv(false)}
-                className="flex-1 bg-gray-200 text-gray-700 rounded px-2 py-1 text-xs"
-              >Cancelar</button>
+              <button onClick={() => setShowAddProv(false)} className={`flex-1 ${btnSecondary}`}>Cancelar</button>
             </div>
           </div>
         )}
@@ -99,174 +103,150 @@ export default function ProveedoresModule({
           {proveedores.map(prov => {
             const ings = ingredientes.filter(i => i.proveedorId === prov.id)
             const cargados = ings.filter(i => i.precio !== null).length
+            const isActive = selectedId === prov.id && !busqueda
             return (
               <button
                 key={prov.id}
                 onClick={() => { setSelectedId(prov.id); setBusqueda('') }}
-                className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-white transition-colors ${
-                  selectedId === prov.id && !busqueda ? 'bg-white border-l-2 border-l-emerald-600' : ''
+                className={`w-full text-left px-4 py-3 border-b border-brand-border/50 transition-colors ${
+                  isActive ? 'bg-brand-card border-l-2 border-l-brand-accent' : 'hover:bg-brand-card/50'
                 }`}
               >
-                <div className="font-medium text-sm text-gray-800">{prov.nombre}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{cargados}/{ings.length} precios</div>
+                <div className={`text-sm font-medium ${isActive ? 'text-brand-text' : 'text-brand-muted'}`}>{prov.nombre}</div>
+                <div className="text-xs text-brand-muted/70 mt-0.5">{cargados}/{ings.length} precios</div>
               </button>
             )
           })}
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-6">
-        <div className="flex items-center gap-6 mb-6 p-4 bg-white rounded-lg border border-gray-200">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-800">{ingredientes.length}</div>
-            <div className="text-xs text-gray-500">Total ingredientes</div>
+      {/* Main */}
+      <main className="flex-1 overflow-y-auto bg-brand-dark">
+        {/* Stats bar */}
+        <div className="flex items-center gap-6 px-6 py-4 border-b border-brand-border">
+          <div className="flex items-center gap-3">
+            <div className="text-center">
+              <div className="text-xl font-semibold text-brand-text">{ingredientes.length}</div>
+              <div className="text-xs text-brand-muted">Total</div>
+            </div>
+            <div className="w-px h-8 bg-brand-border" />
+            <div className="text-center">
+              <div className="text-xl font-semibold text-brand-success">{totalCargados}</div>
+              <div className="text-xs text-brand-muted">Con precio</div>
+            </div>
+            <div className="w-px h-8 bg-brand-border" />
+            <div className="text-center">
+              <div className="text-xl font-semibold text-brand-accent">{ingredientes.length - totalCargados}</div>
+              <div className="text-xs text-brand-muted">Sin precio</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-emerald-600">{totalCargados}</div>
-            <div className="text-xs text-gray-500">Con precio</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-amber-500">{ingredientes.length - totalCargados}</div>
-            <div className="text-xs text-gray-500">Sin precio</div>
-          </div>
-          <div className="flex-1">
+          <div className="flex-1 max-w-xs">
             <input
               type="text"
               placeholder="Buscar ingrediente..."
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className={`${inputClass} w-full`}
             />
           </div>
         </div>
 
-        {!busqueda && (
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">{currentProveedor?.nombre}</h2>
-            <button
-              onClick={() => setShowAddIng(true)}
-              className="bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg hover:bg-emerald-800 transition-colors"
-            >
-              + Agregar ingrediente
-            </button>
-          </div>
-        )}
+        <div className="p-6">
+          {!busqueda && (
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-semibold text-brand-text">{currentProveedor?.nombre}</h2>
+              <button onClick={() => setShowAddIng(true)} className={btnPrimary}>
+                + Agregar ingrediente
+              </button>
+            </div>
+          )}
 
-        {busqueda && (
-          <div className="mb-4 text-sm text-gray-500">
-            {currentIngredientes.length} resultado{currentIngredientes.length !== 1 ? 's' : ''} para &ldquo;{busqueda}&rdquo;
-          </div>
-        )}
+          {busqueda && (
+            <div className="mb-4 text-sm text-brand-muted">
+              {currentIngredientes.length} resultado{currentIngredientes.length !== 1 ? 's' : ''} para &ldquo;{busqueda}&rdquo;
+            </div>
+          )}
 
-        {showAddIng && (
-          <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200">
-            <h3 className="font-medium text-sm text-gray-700 mb-3">Nuevo ingrediente</h3>
-            <div className="flex gap-3 flex-wrap">
-              <input
-                className="border border-gray-300 rounded px-2 py-1.5 text-sm flex-1 min-w-32"
-                placeholder="Nombre"
-                value={newIng.nombre}
-                onChange={e => setNewIng(p => ({ ...p, nombre: e.target.value }))}
-              />
-              <input
-                className="border border-gray-300 rounded px-2 py-1.5 text-sm flex-1 min-w-32"
-                placeholder="Categoría"
-                value={newIng.categoria}
-                onChange={e => setNewIng(p => ({ ...p, categoria: e.target.value }))}
-              />
-              <select
-                className="border border-gray-300 rounded px-2 py-1.5 text-sm"
-                value={newIng.unidad}
-                onChange={e => setNewIng(p => ({ ...p, unidad: e.target.value as Unidad }))}
-              >
-                {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
-              </select>
-              <button
-                onClick={() => {
+          {showAddIng && (
+            <div className="mb-5 p-4 bg-brand-card border border-brand-border rounded-xl">
+              <div className="text-sm font-medium text-brand-text mb-3">Nuevo ingrediente</div>
+              <div className="flex gap-3 flex-wrap">
+                <input className={`${inputClass} flex-1 min-w-32`} placeholder="Nombre" value={newIng.nombre} onChange={e => setNewIng(p => ({ ...p, nombre: e.target.value }))} />
+                <input className={`${inputClass} flex-1 min-w-32`} placeholder="Categoría" value={newIng.categoria} onChange={e => setNewIng(p => ({ ...p, categoria: e.target.value }))} />
+                <select className={`${inputClass}`} value={newIng.unidad} onChange={e => setNewIng(p => ({ ...p, unidad: e.target.value as Unidad }))}>
+                  {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+                <button onClick={() => {
                   if (newIng.nombre.trim() && newIng.categoria.trim()) {
                     onAddIngrediente({ ...newIng, proveedorId: selectedId })
                     setNewIng({ nombre: '', categoria: '', unidad: 'kg', mermaPorDefecto: 0 })
                     setShowAddIng(false)
                   }
-                }}
-                className="bg-emerald-700 text-white px-4 py-1.5 rounded text-sm"
-              >Guardar</button>
-              <button
-                onClick={() => setShowAddIng(false)}
-                className="bg-gray-200 text-gray-700 px-4 py-1.5 rounded text-sm"
-              >Cancelar</button>
+                }} className={btnPrimary}>Guardar</button>
+                <button onClick={() => setShowAddIng(false)} className={btnSecondary}>Cancelar</button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {Object.entries(byCategory).map(([cat, ings]) => (
-          <div key={cat} className="mb-6 bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">{cat}</span>
-              {busqueda && <span className="text-xs text-gray-400">({proveedores.find(p => p.id === ings[0].proveedorId)?.nombre})</span>}
-            </div>
-            <table className="w-full">
-              <thead>
-                <tr className="text-xs text-gray-500 border-b border-gray-100">
-                  <th className="text-left px-4 py-2 font-medium">Ingrediente</th>
-                  <th className="text-left px-4 py-2 font-medium">Unidad</th>
-                  <th className="text-right px-4 py-2 font-medium">Precio</th>
-                  <th className="text-right px-4 py-2 font-medium">Actualizado</th>
-                  <th className="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {ings.map(ing => (
-                  <tr key={ing.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="px-4 py-2 text-sm text-gray-800">{ing.nombre}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{ing.unidad}</td>
-                    <td className="px-4 py-2 text-right">
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        className={`w-32 text-right border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                          ing.precio !== null ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-gray-300'
-                        }`}
-                        placeholder="$ precio"
-                        value={editPrices[ing.id] !== undefined
-                          ? editPrices[ing.id]
-                          : ing.precio !== null ? Math.round(ing.precio).toLocaleString('es-AR') : ''
-                        }
-                        onChange={e => setEditPrices(prev => ({ ...prev, [ing.id]: e.target.value }))}
-                        onBlur={() => handlePrecioBlur(ing)}
-                        onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-                      />
-                    </td>
-                    <td className="px-4 py-2 text-right text-xs text-gray-400">
-                      {ing.updatedAt ? formatDate(ing.updatedAt) : '—'}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {confirmDelete === ing.id ? (
-                        <span className="flex items-center gap-1 justify-end">
-                          <button
-                            onClick={() => { onDeleteIngrediente(ing.id); setConfirmDelete(null) }}
-                            className="text-xs text-red-600 hover:text-red-800 font-medium"
-                          >Confirmar</button>
-                          <span className="text-gray-300">|</span>
-                          <button
-                            onClick={() => setConfirmDelete(null)}
-                            className="text-xs text-gray-500 hover:text-gray-700"
-                          >Cancelar</button>
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDelete(ing.id)}
-                          className="text-gray-300 hover:text-red-500 text-lg leading-none transition-colors"
-                          title="Eliminar"
-                        >×</button>
-                      )}
-                    </td>
+          {Object.entries(byCategory).map(([cat, ings]) => (
+            <div key={cat} className="mb-5 bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-brand-border/50 flex items-center gap-2">
+                <span className="text-xs font-semibold text-brand-muted uppercase tracking-widest">{cat}</span>
+                {busqueda && <span className="text-xs text-brand-muted/60">· {proveedores.find(p => p.id === ings[0].proveedorId)?.nombre}</span>}
+              </div>
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs text-brand-muted border-b border-brand-border/50">
+                    <th className="text-left px-4 py-2 font-medium">Ingrediente</th>
+                    <th className="text-left px-4 py-2 font-medium">Unidad</th>
+                    <th className="text-right px-4 py-2 font-medium">Precio</th>
+                    <th className="text-right px-4 py-2 font-medium">Actualizado</th>
+                    <th className="px-4 py-2 w-8"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ))}
+                </thead>
+                <tbody>
+                  {ings.map(ing => (
+                    <tr key={ing.id} className="border-b border-brand-border/30 hover:bg-brand-card-hover/50 transition-colors">
+                      <td className="px-4 py-2.5 text-sm text-brand-text">{ing.nombre}</td>
+                      <td className="px-4 py-2.5 text-sm text-brand-muted">{ing.unidad}</td>
+                      <td className="px-4 py-2.5 text-right">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          className={`w-32 text-right bg-brand-dark border rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-brand-accent transition-colors ${
+                            ing.precio !== null ? 'border-brand-success/50 text-brand-success' : 'border-brand-border text-brand-text'
+                          }`}
+                          placeholder="$ precio"
+                          value={editPrices[ing.id] !== undefined
+                            ? editPrices[ing.id]
+                            : ing.precio !== null ? Math.round(ing.precio).toLocaleString('es-AR') : ''
+                          }
+                          onChange={e => setEditPrices(prev => ({ ...prev, [ing.id]: e.target.value }))}
+                          onBlur={() => handlePrecioBlur(ing)}
+                          onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                        />
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-xs text-brand-muted/60">
+                        {ing.updatedAt ? formatDate(ing.updatedAt) : '—'}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        {confirmDelete === ing.id ? (
+                          <span className="flex items-center gap-1 justify-end">
+                            <button onClick={() => { onDeleteIngrediente(ing.id); setConfirmDelete(null) }} className="text-xs text-brand-error hover:text-red-400 font-medium">Sí</button>
+                            <span className="text-brand-border">|</span>
+                            <button onClick={() => setConfirmDelete(null)} className="text-xs text-brand-muted hover:text-brand-text">No</button>
+                          </span>
+                        ) : (
+                          <button onClick={() => setConfirmDelete(ing.id)} className="text-brand-border hover:text-brand-error text-lg leading-none transition-colors">×</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   )
