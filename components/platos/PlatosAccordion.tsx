@@ -8,6 +8,7 @@ interface Props {
   platos: Plato[]
   ingredientes: Ingrediente[]
   onUpdatePlato: (plato: Plato) => void
+  readOnly?: boolean
 }
 
 type Filtro = 'todos' | 'con' | 'sin'
@@ -30,7 +31,7 @@ function unidadLabel(u: UnidadPlato) {
   return u === 'gramos' ? 'g' : u === 'ml' ? 'ml' : 'u'
 }
 
-function ItemRow({ item, onChange, onDelete }: { item: ItemPlato; onChange: (item: ItemPlato) => void; onDelete: () => void }) {
+function ItemRow({ item, onChange, onDelete, readOnly }: { item: ItemPlato; onChange: (item: ItemPlato) => void; onDelete: () => void; readOnly?: boolean }) {
   const [cantidad, setCantidad] = useState(String(item.cantidad))
   const [merma, setMerma] = useState(String(item.merma))
 
@@ -52,6 +53,24 @@ function ItemRow({ item, onChange, onDelete }: { item: ItemPlato; onChange: (ite
   }
 
   const editClass = 'bg-transparent border border-transparent hover:border-brand-border/60 focus:border-brand-accent focus:bg-brand-dark rounded px-1 py-0.5 text-xs text-right focus:outline-none transition-colors'
+
+  if (readOnly) {
+    return (
+      <div className="flex items-center justify-between py-1.5 border-b border-brand-border/20 last:border-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-brand-text/90">{item.nombre}</span>
+          {item.ingredienteId && <span className="text-xs text-brand-accent/60">●</span>}
+          <span className="text-xs text-brand-muted/60">
+            {item.cantidad}{unidadLabel(item.unidad)}
+            {item.merma > 0 && ` · ${item.merma}% merma`}
+          </span>
+        </div>
+        <span className="text-sm text-brand-text/80">
+          {item.costoCalculado > 0 ? formatPeso(item.costoCalculado) : <span className="text-brand-muted/40 text-xs">sin precio</span>}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-between py-1.5 border-b border-brand-border/20 last:border-0 group/item">
@@ -130,7 +149,7 @@ function PrecioVentaInput({ plato, onUpdatePlato }: { plato: Plato; onUpdatePlat
   )
 }
 
-function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen }: { plato: Plato; ingredientes: Ingrediente[]; onUpdatePlato: (p: Plato) => void; forceOpen?: boolean }) {
+function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly }: { plato: Plato; ingredientes: Ingrediente[]; onUpdatePlato: (p: Plato) => void; forceOpen?: boolean; readOnly?: boolean }) {
   const [open, setOpen] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [newItem, setNewItem] = useState({ nombre: '', ingredienteId: null as string | null, cantidad: '', unidad: 'gramos' as UnidadPlato, precioBase: '', merma: '0' })
@@ -221,7 +240,7 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen }: { plato: Pl
           {plato.items.length > 0 ? (
             <div className="mb-3">
               {plato.items.map(item => (
-                <ItemRow key={item.id} item={item} onChange={handleChangeItem} onDelete={() => handleDeleteItem(item.id)} />
+                <ItemRow key={item.id} item={item} onChange={handleChangeItem} onDelete={() => handleDeleteItem(item.id)} readOnly={readOnly} />
               ))}
               {/* Totals */}
               <div className="flex items-center justify-between pt-2 mt-1">
@@ -243,14 +262,18 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen }: { plato: Pl
             <div className="text-xs text-brand-muted/50 mb-3">Sin ingredientes cargados</div>
           )}
 
-          {/* Precio venta editable */}
+          {/* Precio venta */}
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs text-brand-muted uppercase tracking-wide">Precio venta</span>
-            <PrecioVentaInput plato={plato} onUpdatePlato={onUpdatePlato} />
+            {readOnly ? (
+              <span className="text-sm text-brand-text/80">{formatPeso(plato.precioVenta)}</span>
+            ) : (
+              <PrecioVentaInput plato={plato} onUpdatePlato={onUpdatePlato} />
+            )}
           </div>
 
           {/* Add item */}
-          {showAddForm ? (
+          {readOnly ? null : showAddForm ? (
             <div className="mt-2 p-3 bg-brand-card border border-brand-border rounded-xl">
               <div className="flex gap-2 flex-wrap items-end">
                 <div className="relative flex-1 min-w-36">
@@ -308,7 +331,7 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen }: { plato: Pl
   )
 }
 
-export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato }: Props) {
+export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, readOnly }: Props) {
   const [seccionesAbiertas, setSeccionesAbiertas] = useState<Set<string>>(new Set(['Entradas']))
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState<Filtro>('todos')
@@ -407,7 +430,7 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato }:
             {isOpen && (
               <div className="border-t border-brand-border/50">
                 {secPlatos.map(plato => (
-                  <PlatoRow key={plato.id} plato={plato} ingredientes={ingredientes} onUpdatePlato={onUpdatePlato} forceOpen={q.length > 0 && visibles.length <= 3} />
+                  <PlatoRow key={plato.id} plato={plato} ingredientes={ingredientes} onUpdatePlato={onUpdatePlato} forceOpen={q.length > 0 && visibles.length <= 3} readOnly={readOnly} />
                 ))}
               </div>
             )}

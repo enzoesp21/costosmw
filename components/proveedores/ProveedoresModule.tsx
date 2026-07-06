@@ -11,12 +11,13 @@ interface Props {
   onUpdatePrecio: (id: string, precio: number) => void
   onAddIngrediente: (ing: Omit<Ingrediente, 'id' | 'precio' | 'updatedAt'>) => void
   onDeleteIngrediente: (id: string) => void
+  readOnly?: boolean
 }
 
 const UNIDADES: Unidad[] = ['kg', 'unidad', 'litro', 'docena', 'cajón', 'bandeja', 'bolsa']
 
 export default function ProveedoresModule({
-  proveedores, ingredientes, onAddProveedor, onUpdatePrecio, onAddIngrediente, onDeleteIngrediente
+  proveedores, ingredientes, onAddProveedor, onUpdatePrecio, onAddIngrediente, onDeleteIngrediente, readOnly
 }: Props) {
   const [selectedId, setSelectedId] = useState<string>(proveedores[0]?.id ?? '')
   const [busqueda, setBusqueda] = useState('')
@@ -61,11 +62,13 @@ export default function ProveedoresModule({
         <div className="p-4 border-b border-brand-border">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-brand-muted uppercase tracking-widest">Proveedores</span>
-            <button
-              onClick={() => setShowAddProv(true)}
-              className="w-6 h-6 rounded-md bg-brand-card hover:bg-brand-card-hover text-brand-muted hover:text-brand-text flex items-center justify-center transition-colors text-base leading-none"
-              title="Agregar proveedor"
-            >+</button>
+            {!readOnly && (
+              <button
+                onClick={() => setShowAddProv(true)}
+                className="w-6 h-6 rounded-md bg-brand-card hover:bg-brand-card-hover text-brand-muted hover:text-brand-text flex items-center justify-center transition-colors text-base leading-none"
+                title="Agregar proveedor"
+              >+</button>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex-1 h-1 bg-brand-border rounded-full overflow-hidden">
@@ -155,9 +158,11 @@ export default function ProveedoresModule({
           {!busqueda && (
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-brand-text">{currentProveedor?.nombre}</h2>
-              <button onClick={() => setShowAddIng(true)} className={btnPrimary}>
-                + Agregar ingrediente
-              </button>
+              {!readOnly && (
+                <button onClick={() => setShowAddIng(true)} className={btnPrimary}>
+                  + Agregar ingrediente
+                </button>
+              )}
             </div>
           )}
 
@@ -210,27 +215,33 @@ export default function ProveedoresModule({
                       <td className="px-4 py-2.5 text-sm text-brand-text">{ing.nombre}</td>
                       <td className="px-4 py-2.5 text-sm text-brand-muted">{ing.unidad}</td>
                       <td className="px-4 py-2.5 text-right">
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          className={`w-32 text-right bg-brand-dark border rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-brand-accent transition-colors ${
-                            ing.precio !== null ? 'border-brand-success/50 text-brand-success' : 'border-brand-border text-brand-text'
-                          }`}
-                          placeholder="$ precio"
-                          value={editPrices[ing.id] !== undefined
-                            ? editPrices[ing.id]
-                            : ing.precio !== null ? Math.round(ing.precio).toLocaleString('es-AR') : ''
-                          }
-                          onChange={e => setEditPrices(prev => ({ ...prev, [ing.id]: e.target.value }))}
-                          onBlur={() => handlePrecioBlur(ing)}
-                          onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-                        />
+                        {readOnly ? (
+                          <span className={`text-sm ${ing.precio !== null ? 'text-brand-success' : 'text-brand-muted/40'}`}>
+                            {ing.precio !== null ? '$' + Math.round(ing.precio).toLocaleString('es-AR') : '—'}
+                          </span>
+                        ) : (
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            className={`w-32 text-right bg-brand-dark border rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-brand-accent transition-colors ${
+                              ing.precio !== null ? 'border-brand-success/50 text-brand-success' : 'border-brand-border text-brand-text'
+                            }`}
+                            placeholder="$ precio"
+                            value={editPrices[ing.id] !== undefined
+                              ? editPrices[ing.id]
+                              : ing.precio !== null ? Math.round(ing.precio).toLocaleString('es-AR') : ''
+                            }
+                            onChange={e => setEditPrices(prev => ({ ...prev, [ing.id]: e.target.value }))}
+                            onBlur={() => handlePrecioBlur(ing)}
+                            onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                          />
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-right text-xs text-brand-muted/60">
                         {ing.updatedAt ? formatDate(ing.updatedAt) : '—'}
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        {confirmDelete === ing.id ? (
+                        {readOnly ? null : confirmDelete === ing.id ? (
                           <span className="flex items-center gap-1 justify-end">
                             <button onClick={() => { onDeleteIngrediente(ing.id); setConfirmDelete(null) }} className="text-xs text-brand-error hover:text-red-400 font-medium">Sí</button>
                             <span className="text-brand-border">|</span>
