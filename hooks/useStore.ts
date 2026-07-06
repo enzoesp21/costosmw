@@ -67,7 +67,19 @@ export function useStore() {
         }
       } catch (err) {
         console.error('Error cargando datos de Supabase:', err)
-        setLoadError(errorMessage(err))
+        let msg = errorMessage(err)
+        // Diagnóstico: petición cruda para ver el status HTTP y el cuerpo real
+        try {
+          const { SUPABASE_URL, SUPABASE_KEY } = await import('../lib/supabase')
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/proveedores?select=id&limit=1`, {
+            headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+          })
+          const body = (await res.text()).slice(0, 300)
+          msg += ` — Diagnóstico: HTTP ${res.status} → ${body || '(respuesta vacía)'}`
+        } catch (e2) {
+          msg += ` — Diagnóstico: no se pudo conectar a Supabase (${e2 instanceof Error ? e2.message : String(e2)}). ¿Proyecto pausado o URL incorrecta?`
+        }
+        setLoadError(msg)
       } finally {
         setLoading(false)
       }
