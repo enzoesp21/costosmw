@@ -68,13 +68,13 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="Mirador Waikiki" className="w-60 max-w-[70vw] h-auto" />
         <div className="text-center">
-          <div className="text-brand-text text-lg font-semibold">App de Costos</div>
+          <div className="text-brand-sage text-lg font-semibold">App de Costos</div>
           <div className="text-brand-muted text-xs tracking-[0.35em] uppercase mt-1.5">· 2026 ·</div>
         </div>
         <button
           onClick={() => setEntered(true)}
           disabled={loading}
-          className="bg-brand-accent hover:bg-brand-accent-hover text-white rounded-xl px-12 py-3 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-wait shadow-lg shadow-brand-accent/20"
+          className="bg-brand-sage hover:bg-brand-sage-dark text-white rounded-xl px-12 py-3 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-wait shadow-lg shadow-brand-sage/20"
         >
           {loading ? 'Cargando…' : 'Entrar'}
         </button>

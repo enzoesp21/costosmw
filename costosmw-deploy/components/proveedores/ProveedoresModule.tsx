@@ -67,7 +67,7 @@ export default function ProveedoresModule({
                 key={prov.id}
                 onClick={() => { setSelectedId(prov.id); setBusqueda('') }}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  isActive ? 'bg-brand-accent text-white border-brand-accent' : 'bg-brand-card text-brand-muted border-brand-border'
+                  isActive ? 'bg-brand-sage text-white border-brand-sage' : 'bg-brand-card text-brand-muted border-brand-border'
                 }`}
               >
                 {prov.nombre}
@@ -117,7 +117,7 @@ export default function ProveedoresModule({
           <div className="flex items-center gap-2">
             <div className="flex-1 h-1 bg-brand-border rounded-full overflow-hidden">
               <div
-                className="h-full bg-brand-accent rounded-full transition-all"
+                className="h-full bg-brand-sage rounded-full transition-all"
                 style={{ width: ingredientes.length > 0 ? `${(totalCargados / ingredientes.length) * 100}%` : '0%' }}
               />
             </div>
@@ -156,7 +156,7 @@ export default function ProveedoresModule({
                 key={prov.id}
                 onClick={() => { setSelectedId(prov.id); setBusqueda('') }}
                 className={`w-full text-left px-4 py-3 border-b border-brand-border/50 transition-colors ${
-                  isActive ? 'bg-brand-card border-l-2 border-l-brand-accent' : 'hover:bg-brand-card/50'
+                  isActive ? 'bg-brand-card border-l-2 border-l-brand-sage' : 'hover:bg-brand-card/50'
                 }`}
               >
                 <div className={`text-sm font-medium ${isActive ? 'text-brand-text' : 'text-brand-muted'}`}>{prov.nombre}</div>
@@ -240,7 +240,7 @@ export default function ProveedoresModule({
           {Object.entries(byCategory).map(([cat, ings]) => (
             <div key={cat} className="mb-5 bg-brand-card border border-brand-border rounded-xl overflow-hidden">
               <div className="px-4 py-2.5 border-b border-brand-border/50 flex items-center gap-2">
-                <span className="text-xs font-semibold text-brand-muted uppercase tracking-widest">{cat}</span>
+                <span className="text-xs font-semibold text-brand-sage uppercase tracking-widest">{cat}</span>
                 {busqueda && <span className="text-xs text-brand-muted/60">· {proveedores.find(p => p.id === ings[0].proveedorId)?.nombre}</span>}
               </div>
               <table className="w-full">

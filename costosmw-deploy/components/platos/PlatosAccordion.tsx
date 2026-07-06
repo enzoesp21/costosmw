@@ -376,7 +376,7 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
               key={f}
               onClick={() => setFiltro(f)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                filtro === f ? 'bg-brand-card text-brand-text border border-brand-border' : 'text-brand-muted hover:text-brand-text border border-transparent'
+                filtro === f ? 'bg-brand-sage/10 text-brand-sage border border-brand-sage/40' : 'text-brand-muted hover:text-brand-text border border-transparent'
               }`}
             >
               {label}
@@ -420,7 +420,7 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
             >
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <span className={`text-xs text-brand-muted transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
-                <span className="text-sm font-semibold text-brand-text">{sec}</span>
+                <span className="text-sm font-semibold text-brand-sage">{sec}</span>
                 <span className="text-xs text-brand-muted/50 whitespace-nowrap">{secPlatos.length} platos</span>
               </div>
               <span className="text-xs text-brand-muted/40 whitespace-nowrap shrink-0">{secPlatos.filter(p => p.items.length > 0).length}/{secPlatos.length} <span className="hidden sm:inline">con receta</span></span>

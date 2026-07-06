@@ -16,7 +16,7 @@ body {
 }
 
 ::selection {
-  background-color: #d97757;
+  background-color: #6e8f7a;
   color: #fff;
 }
 
@@ -32,5 +32,5 @@ body {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8a8371;
+  background: #6e8f7a;
 }
