@@ -56,9 +56,53 @@ export default function ProveedoresModule({
   const btnSecondary = 'bg-brand-card hover:bg-brand-card-hover text-brand-muted hover:text-brand-text border border-brand-border rounded-lg px-4 py-1.5 text-sm font-medium transition-colors'
 
   return (
-    <div className="flex h-[calc(100vh-49px)]">
-      {/* Sidebar */}
-      <aside className="w-60 bg-brand-dark border-r border-brand-border flex flex-col shrink-0">
+    <div className="flex flex-col md:flex-row md:h-[calc(100vh-62px)]">
+      {/* Mobile: proveedores como chips deslizables */}
+      <div className="md:hidden border-b border-brand-border bg-brand-dark px-3 py-2.5">
+        <div className="flex gap-2 overflow-x-auto pb-1 items-center">
+          {proveedores.map(prov => {
+            const isActive = selectedId === prov.id && !busqueda
+            return (
+              <button
+                key={prov.id}
+                onClick={() => { setSelectedId(prov.id); setBusqueda('') }}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  isActive ? 'bg-brand-accent text-white border-brand-accent' : 'bg-brand-card text-brand-muted border-brand-border'
+                }`}
+              >
+                {prov.nombre}
+              </button>
+            )
+          })}
+          {!readOnly && (
+            <button
+              onClick={() => setShowAddProv(true)}
+              className="shrink-0 w-7 h-7 rounded-full bg-brand-card border border-brand-border text-brand-muted text-base leading-none"
+              title="Agregar proveedor"
+            >+</button>
+          )}
+        </div>
+        {showAddProv && (
+          <div className="mt-2 flex gap-2">
+            <input
+              className={`${inputClass} flex-1`}
+              placeholder="Nombre del proveedor"
+              value={newProvNombre}
+              onChange={e => setNewProvNombre(e.target.value)}
+            />
+            <button
+              onClick={() => {
+                if (newProvNombre.trim()) { onAddProveedor(newProvNombre.trim()); setNewProvNombre(''); setShowAddProv(false) }
+              }}
+              className={btnPrimary}
+            >OK</button>
+            <button onClick={() => setShowAddProv(false)} className={btnSecondary}>✕</button>
+          </div>
+        )}
+      </div>
+
+      {/* Sidebar (desktop) */}
+      <aside className="w-60 bg-brand-dark border-r border-brand-border hidden md:flex flex-col shrink-0">
         <div className="p-4 border-b border-brand-border">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-brand-muted uppercase tracking-widest">Proveedores</span>
@@ -126,7 +170,7 @@ export default function ProveedoresModule({
       {/* Main */}
       <main className="flex-1 overflow-y-auto bg-brand-dark">
         {/* Stats bar */}
-        <div className="flex items-center gap-6 px-6 py-4 border-b border-brand-border">
+        <div className="flex items-center gap-4 sm:gap-6 px-4 sm:px-6 py-3 sm:py-4 border-b border-brand-border flex-wrap">
           <div className="flex items-center gap-3">
             <div className="text-center">
               <div className="text-xl font-semibold text-brand-text">{ingredientes.length}</div>
@@ -143,7 +187,7 @@ export default function ProveedoresModule({
               <div className="text-xs text-brand-muted">Sin precio</div>
             </div>
           </div>
-          <div className="flex-1 max-w-xs">
+          <div className="flex-1 max-w-xs min-w-36">
             <input
               type="text"
               placeholder="Buscar ingrediente..."
@@ -154,7 +198,7 @@ export default function ProveedoresModule({
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {!busqueda && (
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-brand-text">{currentProveedor?.nombre}</h2>
@@ -202,19 +246,19 @@ export default function ProveedoresModule({
               <table className="w-full">
                 <thead>
                   <tr className="text-xs text-brand-muted border-b border-brand-border/50">
-                    <th className="text-left px-4 py-2 font-medium">Ingrediente</th>
-                    <th className="text-left px-4 py-2 font-medium">Unidad</th>
-                    <th className="text-right px-4 py-2 font-medium">Precio</th>
-                    <th className="text-right px-4 py-2 font-medium">Actualizado</th>
+                    <th className="text-left px-3 sm:px-4 py-2 font-medium">Ingrediente</th>
+                    <th className="text-left px-3 sm:px-4 py-2 font-medium hidden sm:table-cell">Unidad</th>
+                    <th className="text-right px-3 sm:px-4 py-2 font-medium">Precio</th>
+                    <th className="text-right px-3 sm:px-4 py-2 font-medium hidden sm:table-cell">Actualizado</th>
                     <th className="px-4 py-2 w-8"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {ings.map(ing => (
                     <tr key={ing.id} className="border-b border-brand-border/30 hover:bg-brand-card-hover/50 transition-colors">
-                      <td className="px-4 py-2.5 text-sm text-brand-text">{ing.nombre}</td>
-                      <td className="px-4 py-2.5 text-sm text-brand-muted">{ing.unidad}</td>
-                      <td className="px-4 py-2.5 text-right">
+                      <td className="px-3 sm:px-4 py-2.5 text-sm text-brand-text">{ing.nombre}</td>
+                      <td className="px-3 sm:px-4 py-2.5 text-sm text-brand-muted hidden sm:table-cell">{ing.unidad}</td>
+                      <td className="px-3 sm:px-4 py-2.5 text-right">
                         {readOnly ? (
                           <span className={`text-sm ${ing.precio !== null ? 'text-brand-success' : 'text-brand-muted/40'}`}>
                             {ing.precio !== null ? '$' + Math.round(ing.precio).toLocaleString('es-AR') : '—'}
@@ -223,7 +267,7 @@ export default function ProveedoresModule({
                           <input
                             type="text"
                             inputMode="numeric"
-                            className={`w-32 text-right bg-brand-dark border rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-brand-accent transition-colors ${
+                            className={`w-24 sm:w-32 text-right bg-brand-dark border rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-brand-accent transition-colors ${
                               ing.precio !== null ? 'border-brand-success/50 text-brand-success' : 'border-brand-border text-brand-text'
                             }`}
                             placeholder="$ precio"
@@ -237,7 +281,7 @@ export default function ProveedoresModule({
                           />
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-right text-xs text-brand-muted/60">
+                      <td className="px-3 sm:px-4 py-2.5 text-right text-xs text-brand-muted/60 hidden sm:table-cell">
                         {ing.updatedAt ? formatDate(ing.updatedAt) : '—'}
                       </td>
                       <td className="px-4 py-2.5 text-right">

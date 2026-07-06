@@ -214,19 +214,19 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly }: {
       {/* Plato header row */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-brand-card/30 transition-colors group"
+        className="w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-3.5 hover:bg-brand-card/30 transition-colors group"
       >
-        <div className="flex items-center gap-3">
-          <span className={`text-xs transition-transform duration-200 text-brand-muted ${isOpen ? 'rotate-90' : ''}`}>▶</span>
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className={`text-xs transition-transform duration-200 text-brand-muted shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
           <span className="text-sm font-medium text-brand-text text-left">{plato.nombre}</span>
           {plato.items.length > 0 && (
-            <span className="text-xs text-brand-muted/60">{plato.items.length} ingredientes</span>
+            <span className="text-xs text-brand-muted/60 hidden sm:inline whitespace-nowrap">{plato.items.length} ingredientes</span>
           )}
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {plato.items.length > 0 && (
             <>
-              <span className="text-sm text-brand-muted/70">{formatPeso(totalCosto)}</span>
+              <span className="text-sm text-brand-muted/70 hidden sm:inline">{formatPeso(totalCosto)}</span>
               <span className={`text-xs font-medium ${getFoodCostColor(foodCost)}`}>{foodCost.toFixed(1)}%</span>
             </>
           )}
@@ -236,16 +236,16 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly }: {
 
       {/* Expanded content */}
       {isOpen && (
-        <div className="bg-brand-card/20 border-t border-brand-border/30 px-5 pb-4 pt-3">
+        <div className="bg-brand-card/20 border-t border-brand-border/30 px-3 sm:px-5 pb-4 pt-3">
           {plato.items.length > 0 ? (
             <div className="mb-3">
               {plato.items.map(item => (
                 <ItemRow key={item.id} item={item} onChange={handleChangeItem} onDelete={() => handleDeleteItem(item.id)} readOnly={readOnly} />
               ))}
               {/* Totals */}
-              <div className="flex items-center justify-between pt-2 mt-1">
+              <div className="flex items-center justify-between gap-2 pt-2 mt-1 flex-wrap">
                 <span className="text-xs text-brand-muted uppercase tracking-wide">Costo total</span>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-end">
                   <span className="text-sm font-semibold text-brand-text">{formatPeso(totalCosto)}</span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${
                     foodCost <= 30 ? 'bg-brand-success/10 text-brand-success' :
@@ -416,14 +416,14 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
             {/* Section header */}
             <button
               onClick={() => toggleSeccion(sec)}
-              className="w-full flex items-center justify-between px-5 py-3 hover:bg-brand-card-hover transition-colors"
+              className="w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-3 hover:bg-brand-card-hover transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <span className={`text-xs text-brand-muted transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <span className={`text-xs text-brand-muted transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
                 <span className="text-sm font-semibold text-brand-text">{sec}</span>
-                <span className="text-xs text-brand-muted/50">{secPlatos.length} platos</span>
+                <span className="text-xs text-brand-muted/50 whitespace-nowrap">{secPlatos.length} platos</span>
               </div>
-              <span className="text-xs text-brand-muted/40">{secPlatos.filter(p => p.items.length > 0).length}/{secPlatos.length} con receta</span>
+              <span className="text-xs text-brand-muted/40 whitespace-nowrap shrink-0">{secPlatos.filter(p => p.items.length > 0).length}/{secPlatos.length} <span className="hidden sm:inline">con receta</span></span>
             </button>
 
             {/* Platos */}

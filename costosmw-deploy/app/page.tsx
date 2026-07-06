@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import ProveedoresModule from '../components/proveedores/ProveedoresModule'
 import PlatosAccordion from '../components/platos/PlatosAccordion'
 import ResumenModule from '../components/resumen/ResumenModule'
-import Logo from '../components/Logo'
 import { useStore } from '../hooks/useStore'
 import { Ingrediente } from '../types'
 
@@ -14,6 +13,7 @@ const PIN = '4275'
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>('platos')
+  const [entered, setEntered] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [showPinModal, setShowPinModal] = useState(false)
   const [pinInput, setPinInput] = useState('')
@@ -62,10 +62,22 @@ export default function Home() {
     setPlatos(platos.map(p => ({ ...p, items: p.items.filter(item => item.ingredienteId !== id) })))
   }
 
-  if (loading) {
+  if (!entered) {
     return (
-      <div className="flex items-center justify-center h-screen bg-brand-dark">
-        <div className="text-brand-muted text-sm">Cargando...</div>
+      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center gap-8 px-6">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Mirador Waikiki" className="w-60 max-w-[70vw] h-auto" />
+        <div className="text-center">
+          <div className="text-brand-text text-lg font-semibold">App de Costos</div>
+          <div className="text-brand-muted text-xs tracking-[0.35em] uppercase mt-1.5">· 2026 ·</div>
+        </div>
+        <button
+          onClick={() => setEntered(true)}
+          disabled={loading}
+          className="bg-brand-accent hover:bg-brand-accent-hover text-white rounded-xl px-12 py-3 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-wait shadow-lg shadow-brand-accent/20"
+        >
+          {loading ? 'Cargando…' : 'Entrar'}
+        </button>
       </div>
     )
   }
@@ -73,10 +85,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-brand-dark">
       {/* Header */}
-      <header className="border-b border-brand-border px-6 py-3 flex items-center gap-6">
-        <div className="flex items-center gap-3">
-          <Logo className="text-brand-text" />
-          <span className="text-brand-muted text-xs">Costos</span>
+      <header className="border-b border-brand-border px-3 sm:px-6 py-2.5 flex items-center gap-3 sm:gap-6 flex-wrap">
+        <div className="flex items-center gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Mirador Waikiki" className="h-9 w-auto" />
+          <span className="text-brand-muted text-xs hidden sm:inline">Costos</span>
         </div>
         <nav className="flex gap-1">
           {([['platos', 'Platos'], ['precios', 'Precios'], ['resumen', 'Resumen']] as [Tab, string][]).map(([t, label]) => (
@@ -91,25 +104,25 @@ export default function Home() {
             </button>
           ))}
         </nav>
-        <div className="ml-auto flex items-center gap-4 text-xs">
+        <div className="ml-auto flex items-center gap-2 sm:gap-4 text-xs">
           {editMode && saveStatus === 'saving' && <span className="text-brand-muted animate-pulse">Guardando…</span>}
           {editMode && saveStatus === 'saved' && <span className="text-brand-success">✓ Guardado</span>}
-          {editMode && saveStatus === 'error' && <span className="text-brand-error">⚠ Error al guardar — revisá tu conexión</span>}
+          {editMode && saveStatus === 'error' && <span className="text-brand-error">⚠ Error al guardar</span>}
           {editMode ? (
             <button
               onClick={handleLock}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-accent/10 text-brand-accent hover:bg-brand-accent/20 font-medium transition-colors"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-brand-accent/10 text-brand-accent hover:bg-brand-accent/20 font-medium transition-colors"
               title="Bloquear edición"
             >
-              🔓 Edición activa
+              🔓<span className="hidden sm:inline"> Edición activa</span>
             </button>
           ) : (
             <button
               onClick={() => setShowPinModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-card text-brand-muted hover:text-brand-text border border-brand-border font-medium transition-colors"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-brand-card text-brand-muted hover:text-brand-text border border-brand-border font-medium transition-colors"
               title="Ingresar clave para editar"
             >
-              🔒 Solo lectura
+              🔒<span className="hidden sm:inline"> Solo lectura</span>
             </button>
           )}
         </div>

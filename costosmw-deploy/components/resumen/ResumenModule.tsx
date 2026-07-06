@@ -42,8 +42,8 @@ export default function ResumenModule({ platos }: Props) {
   }
 
   return (
-    <div className="p-6 bg-brand-dark min-h-full">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-3 sm:p-6 bg-brand-dark min-h-full">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 gap-3 flex-wrap">
         <div>
           <h2 className="text-lg font-semibold text-brand-text">Resumen general</h2>
           <p className="text-sm text-brand-muted mt-0.5">{platosConItems.length} platos con ingredientes cargados</p>
@@ -64,8 +64,8 @@ export default function ResumenModule({ platos }: Props) {
           <div className="text-xs mt-1 text-brand-muted/60">Cargá ingredientes en la sección Platos para ver el resumen aquí.</div>
         </div>
       ) : (
-        <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
-          <table className="w-full">
+        <div className="bg-brand-card border border-brand-border rounded-xl overflow-x-auto">
+          <table className="w-full min-w-[560px]">
             <thead>
               <tr className="text-xs text-brand-muted border-b border-brand-border/50">
                 <th className="text-left px-4 py-3 font-medium">Plato</th>
