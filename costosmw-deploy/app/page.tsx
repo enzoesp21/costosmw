@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import ProveedoresModule from '../components/proveedores/ProveedoresModule'
 import PlatosAccordion from '../components/platos/PlatosAccordion'
 import ResumenModule from '../components/resumen/ResumenModule'
+import Logo from '../components/Logo'
 import { useStore } from '../hooks/useStore'
 import { Ingrediente } from '../types'
 
@@ -18,7 +19,7 @@ export default function Home() {
   const [pinInput, setPinInput] = useState('')
   const [pinError, setPinError] = useState(false)
   const {
-    loading, saveStatus,
+    loading, loadError, saveStatus,
     proveedores, setProveedores,
     ingredientes, setIngredientes,
     platos, setPlatos, updatePlato,
@@ -73,12 +74,9 @@ export default function Home() {
     <div className="min-h-screen bg-brand-dark">
       {/* Header */}
       <header className="border-b border-brand-border px-6 py-3 flex items-center gap-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-md bg-brand-accent flex items-center justify-center">
-            <span className="text-white text-xs font-semibold">O</span>
-          </div>
-          <span className="text-brand-text text-sm font-semibold">Oliovita</span>
-          <span className="text-brand-muted text-xs">· Costos</span>
+        <div className="flex items-center gap-3">
+          <Logo className="text-brand-text" />
+          <span className="text-brand-muted text-xs">Costos</span>
         </div>
         <nav className="flex gap-1">
           {([['platos', 'Platos'], ['precios', 'Precios'], ['resumen', 'Resumen']] as [Tab, string][]).map(([t, label]) => (
@@ -116,6 +114,14 @@ export default function Home() {
           )}
         </div>
       </header>
+
+      {loadError && (
+        <div className="max-w-3xl mx-auto mt-4 px-4">
+          <div className="bg-brand-error/10 border border-brand-error/30 text-brand-error rounded-xl px-4 py-3 text-sm">
+            <span className="font-semibold">No se pudieron cargar los datos.</span> {loadError}
+          </div>
+        </div>
+      )}
 
       {tab === 'platos' && (
         <PlatosAccordion

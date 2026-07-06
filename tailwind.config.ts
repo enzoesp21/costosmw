@@ -10,16 +10,18 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          dark: '#1a1916',
-          card: '#2a2925',
-          'card-hover': '#333330',
-          border: '#3d3d38',
+          // Tema claro cremita (los nombres se mantienen por compatibilidad:
+          // "dark" es el fondo de página, "card" las tarjetas)
+          dark: '#f2ede3',
+          card: '#fdfbf6',
+          'card-hover': '#f5efe3',
+          border: '#ddd3bf',
           accent: '#d97757',
           'accent-hover': '#c86644',
-          text: '#ede8df',
-          muted: '#8c877e',
-          success: '#5a9e6f',
-          error: '#e05c5c',
+          text: '#3d3929',
+          muted: '#8a8371',
+          success: '#4e8a5f',
+          error: '#c94f4f',
         },
       },
       fontFamily: {

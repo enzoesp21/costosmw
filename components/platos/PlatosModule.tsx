@@ -14,7 +14,7 @@ const SECCIONES = ['Entradas', 'Ensaladas', 'Arroces', 'Pescados', 'Carnes', 'Pa
 
 function getFoodCostColor(fc: number) {
   if (fc <= 30) return 'text-brand-success bg-brand-success/10'
-  if (fc <= 40) return 'text-yellow-400 bg-yellow-400/10'
+  if (fc <= 40) return 'text-amber-600 bg-amber-500/10'
   return 'text-brand-error bg-brand-error/10'
 }
 

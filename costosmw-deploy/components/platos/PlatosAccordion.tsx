@@ -19,7 +19,7 @@ const inputClass = 'bg-brand-dark border border-brand-border rounded-lg px-2.5 p
 
 function getFoodCostColor(fc: number) {
   if (fc <= 30) return 'text-brand-success'
-  if (fc <= 40) return 'text-yellow-400'
+  if (fc <= 40) return 'text-amber-600'
   return 'text-brand-error'
 }
 
@@ -249,7 +249,7 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly }: {
                   <span className="text-sm font-semibold text-brand-text">{formatPeso(totalCosto)}</span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${
                     foodCost <= 30 ? 'bg-brand-success/10 text-brand-success' :
-                    foodCost <= 40 ? 'bg-yellow-400/10 text-yellow-400' :
+                    foodCost <= 40 ? 'bg-amber-500/10 text-amber-600' :
                     'bg-brand-error/10 text-brand-error'
                   }`}>
                     FC {foodCost.toFixed(1)}%

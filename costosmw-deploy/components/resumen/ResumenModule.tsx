@@ -9,7 +9,7 @@ interface Props {
 
 function getFoodCostClass(fc: number) {
   if (fc <= 30) return 'text-brand-success bg-brand-success/10'
-  if (fc <= 40) return 'text-yellow-400 bg-yellow-400/10'
+  if (fc <= 40) return 'text-amber-600 bg-amber-500/10'
   return 'text-brand-error bg-brand-error/10'
 }
 
@@ -38,7 +38,7 @@ export default function ResumenModule({ platos }: Props) {
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Resumen')
-    XLSX.writeFile(wb, 'oliovita-costeo.xlsx')
+    XLSX.writeFile(wb, 'waikiki-costeo.xlsx')
   }
 
   return (

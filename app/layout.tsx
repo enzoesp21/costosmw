@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Oliovita · Costos',
+  title: 'Mirador Waikiki · Costos',
   description: 'Sistema de costeo gastronómico',
 }
 

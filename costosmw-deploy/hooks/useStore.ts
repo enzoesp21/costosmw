@@ -26,6 +26,7 @@ export function useStore() {
   const [ingredientes, setIngredientesState] = useState<Ingrediente[]>([])
   const [platos, setPlatosState] = useState<Plato[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
 
   const ingredientesRef = useRef<Ingrediente[]>([])
@@ -49,6 +50,12 @@ export function useStore() {
         ingredientesRef.current = ings
         setPlatosState(plts)
         platosRef.current = plts
+        if (provs.length === 0 && ings.length === 0 && plts.length === 0) {
+          setLoadError('Conectó a Supabase pero no encontró datos. Revisá que las tablas tengan filas y que RLS no esté bloqueando la lectura.')
+        }
+      } catch (err) {
+        console.error('Error cargando datos de Supabase:', err)
+        setLoadError(err instanceof Error ? err.message : String(err))
       } finally {
         setLoading(false)
       }
@@ -163,6 +170,7 @@ export function useStore() {
 
   return {
     loading,
+    loadError,
     saveStatus,
     proveedores, setProveedores,
     ingredientes, setIngredientes,
