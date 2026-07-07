@@ -24,6 +24,7 @@ export default function Home() {
     ingredientes, setIngredientes,
     platos, setPlatos, updatePlato,
     actualizarPrecioIngrediente,
+    salsaComponentes,
   } = useStore()
 
   useEffect(() => {
@@ -142,6 +143,7 @@ export default function Home() {
           ingredientes={ingredientes}
           onUpdatePlato={updatePlato}
           readOnly={!editMode}
+          salsaComponentes={salsaComponentes}
         />
       )}
 

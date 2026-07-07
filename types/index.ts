@@ -36,3 +36,14 @@ export interface Plato {
   precioVenta: number
   items: ItemPlato[]
 }
+
+// Componente de una salsa madre (para desglosar el costo dentro de un plato)
+export interface SalsaComponente {
+  salsaId: string
+  nombre: string
+  unidad: string
+  cantidadPorKg: number
+  costoPorKg: number
+}
+
+export type SalsaComponentes = Record<string, SalsaComponente[]>

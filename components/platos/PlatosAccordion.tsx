@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Ingrediente, ItemPlato, Plato, UnidadPlato } from '../../types'
+import { Ingrediente, ItemPlato, Plato, SalsaComponente, SalsaComponentes, UnidadPlato } from '../../types'
 import { formatPeso, calcularCosto } from '../../utils/format'
 
 interface Props {
@@ -9,6 +9,41 @@ interface Props {
   ingredientes: Ingrediente[]
   onUpdatePlato: (plato: Plato) => void
   readOnly?: boolean
+  salsaComponentes?: SalsaComponentes
+}
+
+// Desglose de una salsa escalado a la cantidad usada en el plato
+function SalsaDesglose({ componentes, item }: { componentes: SalsaComponente[]; item: ItemPlato }) {
+  const [open, setOpen] = useState(false)
+  const kg = item.cantidad / 1000 // gramos/ml -> kg de salsa
+  return (
+    <div className="pl-4 mt-0.5">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="text-xs text-brand-sage hover:text-brand-sage-dark flex items-center gap-1 transition-colors"
+      >
+        <span className={`transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▸</span>
+        {open ? 'ocultar receta' : 'ver receta de la salsa'}
+      </button>
+      {open && (
+        <div className="mt-1 border-l-2 border-brand-sage/30 pl-3 py-1 space-y-0.5">
+          {componentes.map((c, idx) => {
+            const cant = c.cantidadPorKg * kg
+            const costo = c.costoPorKg * kg
+            const cantTxt = c.unidad === 'unidad'
+              ? `${cant.toFixed(1)} u`
+              : `${cant < 10 ? cant.toFixed(1) : Math.round(cant)} g`
+            return (
+              <div key={idx} className="flex items-center justify-between text-xs">
+                <span className="text-brand-muted/80">{c.nombre} <span className="text-brand-muted/50">{cantTxt}</span></span>
+                <span className="text-brand-muted/70">{costo > 0 ? formatPeso(costo) : <span className="text-brand-muted/40">—</span>}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
 }
 
 type Filtro = 'todos' | 'con' | 'sin'
@@ -31,9 +66,12 @@ function unidadLabel(u: UnidadPlato) {
   return u === 'gramos' ? 'g' : u === 'ml' ? 'ml' : 'u'
 }
 
-function ItemRow({ item, onChange, onDelete, readOnly }: { item: ItemPlato; onChange: (item: ItemPlato) => void; onDelete: () => void; readOnly?: boolean }) {
+function ItemRow({ item, onChange, onDelete, readOnly, componentes }: { item: ItemPlato; onChange: (item: ItemPlato) => void; onDelete: () => void; readOnly?: boolean; componentes?: SalsaComponente[] }) {
   const [cantidad, setCantidad] = useState(String(item.cantidad))
   const [merma, setMerma] = useState(String(item.merma))
+  const desglose = componentes && componentes.length > 0
+    ? <SalsaDesglose componentes={componentes} item={item} />
+    : null
 
   useEffect(() => {
     setCantidad(String(item.cantidad))
@@ -56,24 +94,28 @@ function ItemRow({ item, onChange, onDelete, readOnly }: { item: ItemPlato; onCh
 
   if (readOnly) {
     return (
-      <div className="flex items-center justify-between py-1.5 border-b border-brand-border/20 last:border-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-brand-text/90">{item.nombre}</span>
-          {item.ingredienteId && <span className="text-xs text-brand-accent/60">●</span>}
-          <span className="text-xs text-brand-muted/60">
-            {item.cantidad}{unidadLabel(item.unidad)}
-            {item.merma > 0 && ` · ${item.merma}% merma`}
+      <div className="py-1.5 border-b border-brand-border/20 last:border-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-brand-text/90">{item.nombre}</span>
+            {item.ingredienteId && <span className="text-xs text-brand-accent/60">●</span>}
+            <span className="text-xs text-brand-muted/60">
+              {item.cantidad}{unidadLabel(item.unidad)}
+              {item.merma > 0 && ` · ${item.merma}% merma`}
+            </span>
+          </div>
+          <span className="text-sm text-brand-text/80">
+            {item.costoCalculado > 0 ? formatPeso(item.costoCalculado) : <span className="text-brand-muted/40 text-xs">sin precio</span>}
           </span>
         </div>
-        <span className="text-sm text-brand-text/80">
-          {item.costoCalculado > 0 ? formatPeso(item.costoCalculado) : <span className="text-brand-muted/40 text-xs">sin precio</span>}
-        </span>
+        {desglose}
       </div>
     )
   }
 
   return (
-    <div className="flex items-center justify-between py-1.5 border-b border-brand-border/20 last:border-0 group/item">
+   <div className="border-b border-brand-border/20 last:border-0">
+    <div className="flex items-center justify-between py-1.5 group/item">
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-sm text-brand-text/90">{item.nombre}</span>
         {item.ingredienteId && <span className="text-xs text-brand-accent/60">●</span>}
@@ -113,6 +155,8 @@ function ItemRow({ item, onChange, onDelete, readOnly }: { item: ItemPlato; onCh
         >×</button>
       </div>
     </div>
+    {desglose}
+   </div>
   )
 }
 
@@ -149,7 +193,7 @@ function PrecioVentaInput({ plato, onUpdatePlato }: { plato: Plato; onUpdatePlat
   )
 }
 
-function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly }: { plato: Plato; ingredientes: Ingrediente[]; onUpdatePlato: (p: Plato) => void; forceOpen?: boolean; readOnly?: boolean }) {
+function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly, salsaComponentes }: { plato: Plato; ingredientes: Ingrediente[]; onUpdatePlato: (p: Plato) => void; forceOpen?: boolean; readOnly?: boolean; salsaComponentes?: SalsaComponentes }) {
   const [open, setOpen] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [newItem, setNewItem] = useState({ nombre: '', ingredienteId: null as string | null, cantidad: '', unidad: 'gramos' as UnidadPlato, precioBase: '', merma: '0' })
@@ -240,7 +284,7 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly }: {
           {plato.items.length > 0 ? (
             <div className="mb-3">
               {plato.items.map(item => (
-                <ItemRow key={item.id} item={item} onChange={handleChangeItem} onDelete={() => handleDeleteItem(item.id)} readOnly={readOnly} />
+                <ItemRow key={item.id} item={item} onChange={handleChangeItem} onDelete={() => handleDeleteItem(item.id)} readOnly={readOnly} componentes={item.ingredienteId ? salsaComponentes?.[item.ingredienteId] : undefined} />
               ))}
               {/* Totals */}
               <div className="flex items-center justify-between gap-2 pt-2 mt-1 flex-wrap">
@@ -331,7 +375,7 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly }: {
   )
 }
 
-export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, readOnly }: Props) {
+export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, readOnly, salsaComponentes }: Props) {
   const [seccionesAbiertas, setSeccionesAbiertas] = useState<Set<string>>(new Set(['Entradas']))
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState<Filtro>('todos')
@@ -430,7 +474,7 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
             {isOpen && (
               <div className="border-t border-brand-border/50">
                 {secPlatos.map(plato => (
-                  <PlatoRow key={plato.id} plato={plato} ingredientes={ingredientes} onUpdatePlato={onUpdatePlato} forceOpen={q.length > 0 && visibles.length <= 3} readOnly={readOnly} />
+                  <PlatoRow key={plato.id} plato={plato} ingredientes={ingredientes} onUpdatePlato={onUpdatePlato} forceOpen={q.length > 0 && visibles.length <= 3} readOnly={readOnly} salsaComponentes={salsaComponentes} />
                 ))}
               </div>
             )}

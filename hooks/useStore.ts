@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Ingrediente, Plato, Proveedor } from '../types'
+import { Ingrediente, Plato, Proveedor, SalsaComponentes } from '../types'
 import { calcularCosto } from '../utils/format'
 import {
   seedIfEmpty,
   getProveedores,
   getIngredientes,
   getPlatos,
+  getSalsaComponentes,
   upsertProveedor,
   upsertIngrediente,
   deleteIngrediente as dbDeleteIngrediente,
@@ -40,6 +41,7 @@ export function useStore() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [salsaComponentes, setSalsaComponentes] = useState<SalsaComponentes>({})
 
   const ingredientesRef = useRef<Ingrediente[]>([])
   const platosRef = useRef<Plato[]>([])
@@ -51,10 +53,11 @@ export function useStore() {
     async function init() {
       try {
         await seedIfEmpty()
-        const [provs, ings, plts] = await Promise.all([
+        const [provs, ings, plts, salsas] = await Promise.all([
           getProveedores(),
           getIngredientes(),
           getPlatos(),
+          getSalsaComponentes(),
         ])
         setProveedoresState(provs)
         proveedoresRef.current = provs
@@ -62,6 +65,7 @@ export function useStore() {
         ingredientesRef.current = ings
         setPlatosState(plts)
         platosRef.current = plts
+        setSalsaComponentes(salsas)
         if (provs.length === 0 && ings.length === 0 && plts.length === 0) {
           setLoadError('Conectó a Supabase pero no encontró datos. Revisá que las tablas tengan filas y que RLS no esté bloqueando la lectura.')
         }
@@ -196,6 +200,7 @@ export function useStore() {
     loading,
     loadError,
     saveStatus,
+    salsaComponentes,
     proveedores, setProveedores,
     ingredientes, setIngredientes,
     platos, setPlatos, updatePlato,

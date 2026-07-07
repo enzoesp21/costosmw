@@ -1,6 +1,29 @@
 import { supabase } from './supabase'
-import { Ingrediente, ItemPlato, Plato, Proveedor, Unidad, UnidadPlato } from '../types'
+import { Ingrediente, ItemPlato, Plato, Proveedor, SalsaComponentes, Unidad, UnidadPlato } from '../types'
 import { initialProveedores, initialIngredientes, initialPlatos } from '../data/initialData'
+
+// Desglose de las salsas madre. Si la tabla no existe todavía, devuelve {}.
+export async function getSalsaComponentes(): Promise<SalsaComponentes> {
+  try {
+    const { data, error } = await supabase.from('salsa_componentes').select('*')
+    if (error) return {}
+    const map: SalsaComponentes = {}
+    for (const row of data ?? []) {
+      const salsaId = row.salsa_id as string
+      if (!map[salsaId]) map[salsaId] = []
+      map[salsaId].push({
+        salsaId,
+        nombre: row.nombre as string,
+        unidad: row.unidad as string,
+        cantidadPorKg: Number(row.cantidad_por_kg),
+        costoPorKg: Number(row.costo_por_kg),
+      })
+    }
+    return map
+  } catch {
+    return {}
+  }
+}
 
 export async function getProveedores(): Promise<Proveedor[]> {
   const { data, error } = await supabase.from('proveedores').select('*')
