@@ -254,14 +254,14 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly, sal
   }
 
   return (
-    <div className="border-b border-brand-border/50 last:border-0">
+    <div className="border-b border-brand-border/40 last:border-0 bg-brand-card rounded-l-lg my-0.5 mr-0.5">
       {/* Plato header row */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-3.5 hover:bg-brand-card/30 transition-colors group"
+        className="w-full flex items-center justify-between gap-2 pl-3 sm:pl-6 pr-3 sm:pr-5 py-3 hover:bg-brand-card-hover transition-colors group rounded-l-lg"
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <span className={`text-xs transition-transform duration-200 text-brand-muted shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
+          <span className={`text-[10px] transition-transform duration-200 text-brand-sage/70 shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
           <span className="text-sm font-medium text-brand-text text-left">{plato.nombre}</span>
           {plato.items.length > 0 && (
             <span className="text-xs text-brand-muted/60 hidden sm:inline whitespace-nowrap">{plato.items.length} ingredientes</span>
@@ -460,11 +460,13 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
             {/* Section header */}
             <button
               onClick={() => toggleSeccion(sec)}
-              className="w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-3 hover:bg-brand-card-hover transition-colors"
+              className={`w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-3 transition-colors ${
+                isOpen ? 'bg-brand-sage/10' : 'hover:bg-brand-sage/[0.06]'
+              }`}
             >
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <span className={`text-xs text-brand-muted transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
-                <span className="text-sm font-semibold text-brand-sage">{sec}</span>
+                <span className={`text-xs text-brand-sage transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
+                <span className="text-sm font-bold text-brand-sage uppercase tracking-wide">{sec}</span>
                 <span className="text-xs text-brand-muted/50 whitespace-nowrap">{secPlatos.length} platos</span>
               </div>
               <span className="text-xs text-brand-muted/40 whitespace-nowrap shrink-0">{secPlatos.filter(p => p.items.length > 0).length}/{secPlatos.length} <span className="hidden sm:inline">con receta</span></span>
@@ -472,7 +474,7 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
 
             {/* Platos */}
             {isOpen && (
-              <div className="border-t border-brand-border/50">
+              <div className="border-t-2 border-brand-sage/20 bg-brand-dark/40 pl-1.5">
                 {secPlatos.map(plato => (
                   <PlatoRow key={plato.id} plato={plato} ingredientes={ingredientes} onUpdatePlato={onUpdatePlato} forceOpen={q.length > 0 && visibles.length <= 3} readOnly={readOnly} salsaComponentes={salsaComponentes} />
                 ))}
