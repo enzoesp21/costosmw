@@ -73,6 +73,15 @@ export async function upsertIngrediente(i: Ingrediente): Promise<void> {
   if (error) throw error
 }
 
+// Actualiza SOLO el precio/costo de un ítem, en su lugar (no borra ni reescribe la receta)
+export async function updateItemPrecio(itemId: string, precioBase: number, costoCalculado: number): Promise<void> {
+  const { error } = await supabase
+    .from('items_plato')
+    .update({ precio_base: precioBase, costo_calculado: costoCalculado })
+    .eq('id', itemId)
+  if (error) throw error
+}
+
 export async function deleteIngrediente(id: string): Promise<void> {
   const { error } = await supabase.from('ingredientes').delete().eq('id', id)
   if (error) throw error

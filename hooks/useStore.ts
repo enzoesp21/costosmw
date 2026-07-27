@@ -11,6 +11,7 @@ import {
   getSalsaComponentes,
   upsertProveedor,
   upsertIngrediente,
+  updateItemPrecio,
   deleteIngrediente as dbDeleteIngrediente,
   upsertPlato,
   deletePlato as dbDeletePlato,
@@ -48,6 +49,9 @@ export function useStore() {
   const proveedoresRef = useRef<Proveedor[]>([])
   const pendingRef = useRef(0)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Candado de seguridad: solo se permite escribir si la carga inicial trajo datos.
+  // Evita que una carga vacía (por error de red) borre las recetas al guardar.
+  const canWriteRef = useRef(false)
 
   useEffect(() => {
     async function init() {
@@ -68,6 +72,9 @@ export function useStore() {
         setSalsaComponentes(salsas)
         if (provs.length === 0 && ings.length === 0 && plts.length === 0) {
           setLoadError('Conectó a Supabase pero no encontró datos. Revisá que las tablas tengan filas y que RLS no esté bloqueando la lectura.')
+        } else if (plts.length > 0) {
+          // Carga válida con platos: recién ahora habilitamos guardar
+          canWriteRef.current = true
         }
       } catch (err) {
         console.error('Error cargando datos de Supabase:', err)
@@ -93,6 +100,12 @@ export function useStore() {
 
   const track = useCallback((ops: Promise<unknown>[]) => {
     if (ops.length === 0) return
+    // Candado: si la app no cargó datos reales, no escribimos (previene borrados)
+    if (!canWriteRef.current) {
+      console.warn('Escritura bloqueada: la app no cargó datos correctamente. Recargá la página.')
+      setSaveStatus('error')
+      return
+    }
     pendingRef.current += 1
     if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
     setSaveStatus('saving')
@@ -170,28 +183,23 @@ export function useStore() {
     ingredientesRef.current = ings
     const updatedIng = ings.find(i => i.id === ingredienteId)
 
-    const afectados: Plato[] = []
+    // Actualizamos SOLO los ítems afectados, en su lugar (sin borrar/reescribir recetas)
+    const ops: Promise<unknown>[] = []
     const platosNuevos = platosRef.current.map(plato => {
       if (!plato.items.some(i => i.ingredienteId === ingredienteId)) return plato
-      const nuevo = {
+      return {
         ...plato,
-        items: plato.items.map(item =>
-          item.ingredienteId !== ingredienteId
-            ? item
-            : {
-                ...item,
-                precioBase: nuevoPrecio,
-                costoCalculado: calcularCosto(nuevoPrecio, item.cantidad, item.unidad, item.merma),
-              }
-        ),
+        items: plato.items.map(item => {
+          if (item.ingredienteId !== ingredienteId) return item
+          const costo = calcularCosto(nuevoPrecio, item.cantidad, item.unidad, item.merma)
+          ops.push(updateItemPrecio(item.id, nuevoPrecio, costo))
+          return { ...item, precioBase: nuevoPrecio, costoCalculado: costo }
+        }),
       }
-      afectados.push(nuevo)
-      return nuevo
     })
     setPlatosState(platosNuevos)
     platosRef.current = platosNuevos
 
-    const ops: Promise<unknown>[] = afectados.map(p => upsertPlato(p))
     if (updatedIng) ops.push(upsertIngrediente(updatedIng))
     track(ops)
   }, [track])
