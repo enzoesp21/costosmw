@@ -14,6 +14,7 @@ import {
   updateItemPrecio,
   deleteIngrediente as dbDeleteIngrediente,
   upsertPlato,
+  setPlatoVerificado,
   deletePlato as dbDeletePlato,
 } from '../lib/db'
 
@@ -166,6 +167,16 @@ export function useStore() {
     track(ops)
   }, [track])
 
+  /** Marca/desmarca "verificado" sin reescribir la receta del plato */
+  const toggleVerificado = useCallback((platoId: string, verificado: boolean) => {
+    const updated = platosRef.current.map(p =>
+      p.id === platoId ? { ...p, verificado } : p
+    )
+    setPlatosState(updated)
+    platosRef.current = updated
+    track([setPlatoVerificado(platoId, verificado)])
+  }, [track])
+
   const updatePlato = useCallback((plato: Plato) => {
     const updated = platosRef.current.map(p => (p.id === plato.id ? plato : p))
     setPlatosState(updated)
@@ -211,7 +222,7 @@ export function useStore() {
     salsaComponentes,
     proveedores, setProveedores,
     ingredientes, setIngredientes,
-    platos, setPlatos, updatePlato,
+    platos, setPlatos, updatePlato, toggleVerificado,
     actualizarPrecioIngrediente,
   }
 }

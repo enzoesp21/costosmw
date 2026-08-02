@@ -35,7 +35,12 @@ export interface Plato {
   seccion: string
   precioVenta: number
   items: ItemPlato[]
+  /** Marcado a mano cuando la receta está confirmada como completa */
+  verificado?: boolean
 }
+
+/** Estado de carga de un plato, calculado a partir de sus ítems */
+export type EstadoPlato = 'sin-receta' | 'falta-precio' | 'costeado' | 'verificado'
 
 // Componente de una salsa madre (para desglosar el costo dentro de un plato)
 export interface SalsaComponente {

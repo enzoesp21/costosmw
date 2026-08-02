@@ -121,7 +121,14 @@ export async function getPlatos(): Promise<Plato[]> {
     seccion: row.seccion as string,
     precioVenta: row.precio_venta as number,
     items: itemsByPlatoId[row.id as string] ?? [],
+    verificado: (row.verificado as boolean) ?? false,
   }))
+}
+
+/** Marca/desmarca un plato como verificado sin tocar sus ítems */
+export async function setPlatoVerificado(platoId: string, verificado: boolean): Promise<void> {
+  const { error } = await supabase.from('platos').update({ verificado }).eq('id', platoId)
+  if (error) throw error
 }
 
 export async function upsertPlato(p: Plato): Promise<void> {
@@ -149,6 +156,7 @@ export async function upsertPlato(p: Plato): Promise<void> {
     nombre: p.nombre,
     seccion: p.seccion,
     precio_venta: p.precioVenta,
+    verificado: p.verificado ?? false,
   })
   if (error) throw error
 }

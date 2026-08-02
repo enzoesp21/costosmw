@@ -1,15 +1,34 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Ingrediente, ItemPlato, Plato, SalsaComponente, SalsaComponentes, UnidadPlato } from '../../types'
+import { EstadoPlato, Ingrediente, ItemPlato, Plato, SalsaComponente, SalsaComponentes, UnidadPlato } from '../../types'
 import { formatPeso, calcularCosto } from '../../utils/format'
 
 interface Props {
   platos: Plato[]
   ingredientes: Ingrediente[]
   onUpdatePlato: (plato: Plato) => void
+  onToggleVerificado?: (platoId: string, verificado: boolean) => void
   readOnly?: boolean
   salsaComponentes?: SalsaComponentes
+}
+
+/** Ítems del plato que todavía no tienen precio cargado */
+function itemsSinPrecio(plato: Plato): ItemPlato[] {
+  return plato.items.filter(i => !i.precioBase || i.precioBase <= 0)
+}
+
+function estadoDePlato(plato: Plato): EstadoPlato {
+  if (plato.items.length === 0) return 'sin-receta'
+  if (itemsSinPrecio(plato).length > 0) return 'falta-precio'
+  return plato.verificado ? 'verificado' : 'costeado'
+}
+
+const ESTADO_INFO: Record<EstadoPlato, { dot: string; label: string; chip: string }> = {
+  'sin-receta':   { dot: 'bg-brand-error',   label: 'Sin receta',   chip: 'bg-brand-error/10 text-brand-error' },
+  'falta-precio': { dot: 'bg-amber-500',     label: 'Falta precio', chip: 'bg-amber-500/10 text-amber-600' },
+  'costeado':     { dot: 'bg-brand-accent',  label: 'Costeado',     chip: 'bg-brand-accent/10 text-brand-accent' },
+  'verificado':   { dot: 'bg-brand-sage',    label: 'Verificado',   chip: 'bg-brand-sage/10 text-brand-sage' },
 }
 
 // Desglose de una salsa escalado a la cantidad usada en el plato
@@ -46,7 +65,7 @@ function SalsaDesglose({ componentes, item }: { componentes: SalsaComponente[]; 
   )
 }
 
-type Filtro = 'todos' | 'con' | 'sin'
+type Filtro = 'todos' | 'verificado' | 'costeado' | 'falta-precio' | 'sin-receta'
 
 const SECCIONES = ['Entradas', 'Ensaladas', 'Arroces', 'Pescados', 'Carnes', 'Pastas', 'Fast food', 'Menú infantil']
 
@@ -193,7 +212,7 @@ function PrecioVentaInput({ plato, onUpdatePlato }: { plato: Plato; onUpdatePlat
   )
 }
 
-function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly, salsaComponentes }: { plato: Plato; ingredientes: Ingrediente[]; onUpdatePlato: (p: Plato) => void; forceOpen?: boolean; readOnly?: boolean; salsaComponentes?: SalsaComponentes }) {
+function PlatoRow({ plato, ingredientes, onUpdatePlato, onToggleVerificado, forceOpen, readOnly, salsaComponentes }: { plato: Plato; ingredientes: Ingrediente[]; onUpdatePlato: (p: Plato) => void; onToggleVerificado?: (id: string, v: boolean) => void; forceOpen?: boolean; readOnly?: boolean; salsaComponentes?: SalsaComponentes }) {
   const [open, setOpen] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [newItem, setNewItem] = useState({ nombre: '', ingredienteId: null as string | null, cantidad: '', unidad: 'gramos' as UnidadPlato, precioBase: '', merma: '0' })
@@ -203,6 +222,8 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly, sal
   const isOpen = open || !!forceOpen
   const totalCosto = plato.items.reduce((s, i) => s + i.costoCalculado, 0)
   const foodCost = plato.precioVenta > 0 ? (totalCosto / plato.precioVenta) * 100 : 0
+  const sinPrecio = itemsSinPrecio(plato)
+  const estado = estadoDePlato(plato)
 
   const nuevoValido =
     newItem.nombre.trim().length > 0 &&
@@ -262,6 +283,10 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly, sal
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <span className={`text-[10px] transition-transform duration-200 text-brand-sage/70 shrink-0 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
+          <span
+            className={`w-2 h-2 rounded-full shrink-0 ${ESTADO_INFO[estado].dot}`}
+            title={estado === 'falta-precio' ? `${sinPrecio.length} sin precio` : ESTADO_INFO[estado].label}
+          />
           <span className="text-sm font-medium text-brand-text text-left">{plato.nombre}</span>
           {plato.items.length > 0 && (
             <span className="text-xs text-brand-muted/60 hidden sm:inline whitespace-nowrap">{plato.items.length} ingredientes</span>
@@ -305,6 +330,26 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly, sal
           ) : (
             <div className="text-xs text-brand-muted/50 mb-3">Sin ingredientes cargados</div>
           )}
+
+          {/* Estado del plato */}
+          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+            <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${ESTADO_INFO[estado].chip}`}>
+              {ESTADO_INFO[estado].label}
+              {estado === 'falta-precio' && `: ${sinPrecio.map(i => i.nombre).join(', ')}`}
+            </span>
+            {!readOnly && onToggleVerificado && plato.items.length > 0 && (
+              <button
+                onClick={() => onToggleVerificado(plato.id, !plato.verificado)}
+                className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  plato.verificado
+                    ? 'bg-brand-sage/10 text-brand-sage border-brand-sage/40 hover:bg-brand-sage/20'
+                    : 'text-brand-muted border-brand-border hover:text-brand-text hover:border-brand-muted'
+                }`}
+              >
+                {plato.verificado ? '✓ Verificado' : 'Marcar verificado'}
+              </button>
+            )}
+          </div>
 
           {/* Precio venta */}
           <div className="flex items-center justify-between mb-3">
@@ -375,7 +420,7 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, forceOpen, readOnly, sal
   )
 }
 
-export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, readOnly, salsaComponentes }: Props) {
+export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, onToggleVerificado, readOnly, salsaComponentes }: Props) {
   const [seccionesAbiertas, setSeccionesAbiertas] = useState<Set<string>>(new Set(['Entradas']))
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState<Filtro>('todos')
@@ -393,15 +438,20 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
 
   const visibles = platos.filter(p => {
     if (q && !p.nombre.toLowerCase().includes(q)) return false
-    if (filtro === 'sin' && p.items.length > 0) return false
-    if (filtro === 'con' && p.items.length === 0) return false
+    if (filtro !== 'todos' && estadoDePlato(p) !== filtro) return false
     return true
   })
 
   const totalPlatos = platos.length
-  const platosConItems = platos.filter(p => p.items.length > 0).length
+  const cuenta = (e: EstadoPlato) => platos.filter(p => estadoDePlato(p) === e).length
 
-  const filtros: [Filtro, string][] = [['todos', 'Todos'], ['con', 'Con receta'], ['sin', 'Sin receta']]
+  const filtros: [Filtro, string][] = [
+    ['todos', 'Todos'],
+    ['verificado', `✓ Verificados (${cuenta('verificado')})`],
+    ['costeado', `Costeados (${cuenta('costeado')})`],
+    ['falta-precio', `Falta precio (${cuenta('falta-precio')})`],
+    ['sin-receta', `Sin receta (${cuenta('sin-receta')})`],
+  ]
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
@@ -429,18 +479,32 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="flex items-center gap-4 mb-6 text-xs text-brand-muted">
-        {filtrando ? (
-          <span>{visibles.length} resultado{visibles.length !== 1 ? 's' : ''}</span>
-        ) : (
-          <>
-            <span>{totalPlatos} platos</span>
-            <span className="text-brand-border">·</span>
-            <span className="text-brand-success">{platosConItems} con receta</span>
-            <span className="text-brand-border">·</span>
-            <span className="text-brand-accent">{totalPlatos - platosConItems} sin receta</span>
-          </>
+      {/* Stats + barra de progreso */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2 text-xs text-brand-muted flex-wrap">
+          {filtrando ? (
+            <span>{visibles.length} resultado{visibles.length !== 1 ? 's' : ''}</span>
+          ) : (
+            <>
+              <span>{totalPlatos} platos</span>
+              <span className="text-brand-border">·</span>
+              <span className="text-brand-sage">{cuenta('verificado')} verificados</span>
+              <span className="text-brand-border">·</span>
+              <span className="text-brand-accent">{cuenta('costeado')} costeados</span>
+              <span className="text-brand-border">·</span>
+              <span className="text-amber-600">{cuenta('falta-precio')} falta precio</span>
+              <span className="text-brand-border">·</span>
+              <span className="text-brand-error">{cuenta('sin-receta')} sin receta</span>
+            </>
+          )}
+        </div>
+        {!filtrando && totalPlatos > 0 && (
+          <div className="flex h-1.5 rounded-full overflow-hidden bg-brand-border/40">
+            <div className="bg-brand-sage"   style={{ width: `${cuenta('verificado')/totalPlatos*100}%` }} />
+            <div className="bg-brand-accent" style={{ width: `${cuenta('costeado')/totalPlatos*100}%` }} />
+            <div className="bg-amber-500"    style={{ width: `${cuenta('falta-precio')/totalPlatos*100}%` }} />
+            <div className="bg-brand-error"  style={{ width: `${cuenta('sin-receta')/totalPlatos*100}%` }} />
+          </div>
         )}
       </div>
 
@@ -469,14 +533,14 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, r
                 <span className="text-sm font-bold text-brand-sage uppercase tracking-wide">{sec}</span>
                 <span className="text-xs text-brand-muted/50 whitespace-nowrap">{secPlatos.length} platos</span>
               </div>
-              <span className="text-xs text-brand-muted/40 whitespace-nowrap shrink-0">{secPlatos.filter(p => p.items.length > 0).length}/{secPlatos.length} <span className="hidden sm:inline">con receta</span></span>
+              <span className="text-xs text-brand-muted/40 whitespace-nowrap shrink-0">{secPlatos.filter(p => estadoDePlato(p) === 'verificado').length}/{secPlatos.length} <span className="hidden sm:inline">verificados</span></span>
             </button>
 
             {/* Platos */}
             {isOpen && (
               <div className="border-t-2 border-brand-sage/20 bg-brand-dark/40 pl-1.5">
                 {secPlatos.map(plato => (
-                  <PlatoRow key={plato.id} plato={plato} ingredientes={ingredientes} onUpdatePlato={onUpdatePlato} forceOpen={q.length > 0 && visibles.length <= 3} readOnly={readOnly} salsaComponentes={salsaComponentes} />
+                  <PlatoRow key={plato.id} plato={plato} ingredientes={ingredientes} onUpdatePlato={onUpdatePlato} onToggleVerificado={onToggleVerificado} forceOpen={q.length > 0 && visibles.length <= 3} readOnly={readOnly} salsaComponentes={salsaComponentes} />
                 ))}
               </div>
             )}
