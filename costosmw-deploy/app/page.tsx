@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import ProveedoresModule from '../components/proveedores/ProveedoresModule'
 import PlatosAccordion from '../components/platos/PlatosAccordion'
 import ResumenModule from '../components/resumen/ResumenModule'
+import SalsasModule from '../components/salsas/SalsasModule'
 import { useStore } from '../hooks/useStore'
 import { Ingrediente } from '../types'
 
-type Tab = 'platos' | 'precios' | 'resumen'
+type Tab = 'platos' | 'precios' | 'salsas' | 'resumen'
 
 const PIN = '4275'
 
@@ -93,7 +94,7 @@ export default function Home() {
           <span className="text-brand-muted text-xs hidden sm:inline">Costos</span>
         </div>
         <nav className="flex gap-1">
-          {([['platos', 'Platos'], ['precios', 'Precios'], ['resumen', 'Resumen']] as [Tab, string][]).map(([t, label]) => (
+          {([['platos', 'Platos'], ['precios', 'Precios'], ['salsas', 'Salsas'], ['resumen', 'Resumen']] as [Tab, string][]).map(([t, label]) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -160,6 +161,8 @@ export default function Home() {
           readOnly={!editMode}
         />
       )}
+
+      {tab === 'salsas' && <SalsasModule ingredientes={ingredientes} salsaComponentes={salsaComponentes} />}
 
       {tab === 'resumen' && <ResumenModule platos={platos} />}
 
