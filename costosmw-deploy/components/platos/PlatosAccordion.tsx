@@ -13,14 +13,21 @@ interface Props {
   salsaComponentes?: SalsaComponentes
 }
 
-/** Ítems del plato que todavía no tienen precio cargado */
-function itemsSinPrecio(plato: Plato): ItemPlato[] {
-  return plato.items.filter(i => !i.precioBase || i.precioBase <= 0)
+/** Ítems cuyo precio todavía no fue cargado (precio 0 explícito SÍ cuenta como cargado) */
+function itemsSinPrecio(plato: Plato, ingredientes?: Ingrediente[]): ItemPlato[] {
+  return plato.items.filter(i => {
+    if (i.ingredienteId && ingredientes) {
+      const ing = ingredientes.find(x => x.id === i.ingredienteId)
+      // Sin vínculo válido o con precio nunca cargado
+      return !ing || ing.precio === null || ing.precio === undefined
+    }
+    return !i.precioBase || i.precioBase <= 0
+  })
 }
 
-function estadoDePlato(plato: Plato): EstadoPlato {
+function estadoDePlato(plato: Plato, ingredientes?: Ingrediente[]): EstadoPlato {
   if (plato.items.length === 0) return 'sin-receta'
-  if (itemsSinPrecio(plato).length > 0) return 'falta-precio'
+  if (itemsSinPrecio(plato, ingredientes).length > 0) return 'falta-precio'
   return plato.verificado ? 'verificado' : 'costeado'
 }
 
@@ -222,8 +229,8 @@ function PlatoRow({ plato, ingredientes, onUpdatePlato, onToggleVerificado, forc
   const isOpen = open || !!forceOpen
   const totalCosto = plato.items.reduce((s, i) => s + i.costoCalculado, 0)
   const foodCost = plato.precioVenta > 0 ? (totalCosto / plato.precioVenta) * 100 : 0
-  const sinPrecio = itemsSinPrecio(plato)
-  const estado = estadoDePlato(plato)
+  const sinPrecio = itemsSinPrecio(plato, ingredientes)
+  const estado = estadoDePlato(plato, ingredientes)
 
   const nuevoValido =
     newItem.nombre.trim().length > 0 &&
@@ -438,12 +445,12 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, o
 
   const visibles = platos.filter(p => {
     if (q && !p.nombre.toLowerCase().includes(q)) return false
-    if (filtro !== 'todos' && estadoDePlato(p) !== filtro) return false
+    if (filtro !== 'todos' && estadoDePlato(p, ingredientes) !== filtro) return false
     return true
   })
 
   const totalPlatos = platos.length
-  const cuenta = (e: EstadoPlato) => platos.filter(p => estadoDePlato(p) === e).length
+  const cuenta = (e: EstadoPlato) => platos.filter(p => estadoDePlato(p, ingredientes) === e).length
 
   const filtros: [Filtro, string][] = [
     ['todos', 'Todos'],
@@ -533,7 +540,7 @@ export default function PlatosAccordion({ platos, ingredientes, onUpdatePlato, o
                 <span className="text-sm font-bold text-brand-sage uppercase tracking-wide">{sec}</span>
                 <span className="text-xs text-brand-muted/50 whitespace-nowrap">{secPlatos.length} platos</span>
               </div>
-              <span className="text-xs text-brand-muted/40 whitespace-nowrap shrink-0">{secPlatos.filter(p => estadoDePlato(p) === 'verificado').length}/{secPlatos.length} <span className="hidden sm:inline">verificados</span></span>
+              <span className="text-xs text-brand-muted/40 whitespace-nowrap shrink-0">{secPlatos.filter(p => estadoDePlato(p, ingredientes) === 'verificado').length}/{secPlatos.length} <span className="hidden sm:inline">verificados</span></span>
             </button>
 
             {/* Platos */}
