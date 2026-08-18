@@ -131,6 +131,41 @@ export async function setPlatoVerificado(platoId: string, verificado: boolean): 
   if (error) throw error
 }
 
+
+/** Inserta o actualiza UN ítem, sin tocar el resto de la receta */
+export async function upsertItemPlato(platoId: string, item: ItemPlato): Promise<void> {
+  const { error } = await supabase.from('items_plato').upsert({
+    id: item.id,
+    plato_id: platoId,
+    nombre: item.nombre,
+    ingrediente_id: item.ingredienteId,
+    cantidad: item.cantidad,
+    unidad: item.unidad,
+    precio_base: item.precioBase,
+    merma: item.merma,
+    costo_calculado: item.costoCalculado,
+  })
+  if (error) throw error
+}
+
+/** Borra UN ítem por id */
+export async function deleteItemPlato(itemId: string): Promise<void> {
+  const { error } = await supabase.from('items_plato').delete().eq('id', itemId)
+  if (error) throw error
+}
+
+/** Actualiza los campos del plato (nombre, precio, etc.) sin tocar sus ítems */
+export async function updatePlatoCampos(p: Plato): Promise<void> {
+  const { error } = await supabase.from('platos').upsert({
+    id: p.id,
+    nombre: p.nombre,
+    seccion: p.seccion,
+    precio_venta: p.precioVenta,
+    verificado: p.verificado ?? false,
+  })
+  if (error) throw error
+}
+
 export async function upsertPlato(p: Plato): Promise<void> {
   const { error: delError } = await supabase.from('items_plato').delete().eq('plato_id', p.id)
   if (delError) throw delError

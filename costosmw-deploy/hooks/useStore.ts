@@ -14,6 +14,9 @@ import {
   updateItemPrecio,
   deleteIngrediente as dbDeleteIngrediente,
   upsertPlato,
+  upsertItemPlato,
+  deleteItemPlato,
+  updatePlatoCampos,
   setPlatoVerificado,
   deletePlato as dbDeletePlato,
 } from '../lib/db'
@@ -162,7 +165,20 @@ export function useStore() {
       if (!newIds.has(p.id)) ops.push(dbDeletePlato(p.id))
     }
     for (const p of v) {
-      if (changed(prevById.get(p.id), p)) ops.push(upsertPlato(p))
+      const prev = prevById.get(p.id)
+      if (!changed(prev, p)) continue
+      const prevItems = prev?.items ?? []
+      const prevItemsById = new Map(prevItems.map(i => [i.id, i]))
+      const idsActuales = new Set(p.items.map(i => i.id))
+      for (const item of p.items) {
+        if (changed(prevItemsById.get(item.id), item)) ops.push(upsertItemPlato(p.id, item))
+      }
+      for (const item of prevItems) {
+        if (!idsActuales.has(item.id)) ops.push(deleteItemPlato(item.id))
+      }
+      if (!prev || prev.nombre !== p.nombre || prev.precioVenta !== p.precioVenta || prev.seccion !== p.seccion) {
+        ops.push(updatePlatoCampos(p))
+      }
     }
     track(ops)
   }, [track])
@@ -177,11 +193,35 @@ export function useStore() {
     track([setPlatoVerificado(platoId, verificado)])
   }, [track])
 
+  /**
+   * Guarda SOLO lo que cambió respecto al estado en memoria: ítems nuevos,
+   * ítems modificados y los que el usuario borró explícitamente.
+   * Nunca borra ítems que la app no conoce (p. ej. cargados por SQL).
+   */
   const updatePlato = useCallback((plato: Plato) => {
+    const anterior = platosRef.current.find(p => p.id === plato.id)
     const updated = platosRef.current.map(p => (p.id === plato.id ? plato : p))
     setPlatosState(updated)
     platosRef.current = updated
-    track([upsertPlato(plato)])
+
+    const ops: Promise<unknown>[] = []
+    const prevItems = anterior?.items ?? []
+    const prevById = new Map(prevItems.map(i => [i.id, i]))
+    const nuevosIds = new Set(plato.items.map(i => i.id))
+
+    for (const item of plato.items) {
+      if (changed(prevById.get(item.id), item)) ops.push(upsertItemPlato(plato.id, item))
+    }
+    for (const item of prevItems) {
+      if (!nuevosIds.has(item.id)) ops.push(deleteItemPlato(item.id))
+    }
+    if (!anterior ||
+        anterior.nombre !== plato.nombre ||
+        anterior.precioVenta !== plato.precioVenta ||
+        anterior.seccion !== plato.seccion) {
+      ops.push(updatePlatoCampos(plato))
+    }
+    track(ops)
   }, [track])
 
   const actualizarPrecioIngrediente = useCallback((ingredienteId: string, nuevoPrecio: number) => {
